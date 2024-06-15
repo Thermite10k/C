@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#define NUMBER 0
+#define NUMBER 5
 #define LINELIM 1000
 
 int getline(char line[], int limit);
@@ -19,18 +19,30 @@ char *pop();
 
 int main(int argc, char *argv[]){
     char s[LINELIM];
+  
     int mode;
     while((mode = getop(s)) != EOF){
+
+        printf("got: \"%s\"\n", s);
+   
         switch(mode){
+
             case NUMBER:
-                push(s);
+                
+                push(&s[0]);
                 break;
             case '\n':
+                printf("here.");
                 printf("%s", pop());
+                putchar('A');
                 printf("%s", pop());
+                break;
+            default:
+                printf("Yup, someething is wrong.\n");
                 break;
         }
     }
+
 
     return 0;
 }
@@ -51,53 +63,71 @@ char *pop(){
         return 0;
     }
 }
-int i=0;
+int k=0;
 char line[LINELIM];
 int getop(char s[]){
-
-    if(i == 0 || line[i] == '\0'){
+    
+    int j = 0, c ;
+    
+    if(k == 0 || line[k] == '\0'){
         getline(line, LINELIM);
+        k=0;
     }
     
-    int j = 0;
-    while(isspace(line[i])){
-        i++;
+    
+    while((s[0] = c = line[k++]) == ' ' || c == '\t'){
+        ;
     }
-    if(!isdigit(line[i]) && line[i] != '-'){
-        return line[i];
+    s[1] = '\0';
+
+    if(!isdigit(c) && (c != '-' && c!= '.')){
+        printf("R1, K is %d",k);
+        return c;
     }
-    if(line[i] == '-'){
-        if(!isdigit(line[i+1])){
-            return line[i];
+    if(c == '-'){
+        if(!isdigit(line[k])){
+        printf("R2");
+
+            return c;
         }
-        s[j] = line[i++];
+        s[++j] = c = line[k++];
         
         
     }
-    while(isdigit(line[i])){
-        s[j++] = line[i++];
-    }
-    if(line[i] == '.'){
-        s[j++] = line[i++];
-        while(isdigit(line[i])){ 
-          s[j++] = line[i++];
+
+    if(isdigit(c)){
+
+        while(isdigit(s[++j] = c = line[k++])){
+            ;
         }
+    }
+
+    if(c == '.'){
+        while(isdigit(s[++j] = c = line[k++])){ 
+          ;
+        }
+     
     
     }
-    line[j] = '\0';
+    if(c != EOF){
+        k--;
+    }
+    
+    s[j] = '\0';
+
     return NUMBER;
 }
 
 int getline(char *line, int limit){
 
-    char c;
+    int c;
     int i = 0;
-    while((c = getchar()) != EOF && c != '\n'){
-        *(line+i++) = c;
+    while(--limit > 0 && (c = getchar()) != EOF && c != '\n'){
+        *(line+(i++)) = c;
     }
     
     if(c == '\n'){
-        *(line+i++) = c;
+        *(line+(i++)) = c;
     }
     
     *(line + i) = '\0';
