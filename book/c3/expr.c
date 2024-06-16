@@ -5,7 +5,7 @@
 #define LINELIM 1000
 
 int getline(char line[], int limit);
-int getop(char s[]);
+int getop(char s[], int *len);
 
 #define STACKLIMIT 1000
 
@@ -15,27 +15,34 @@ int sp = 0;
 void push(char *n);
 char *pop();
 
+char *alloc(int size);
+void afree(char *p);
 
+void strcp(char *s1, char *s2); // copy s2 to s1
 
 int main(int argc, char *argv[]){
     char s[LINELIM];
-  
-    int mode;
-    while((mode = getop(s)) != EOF){
+    char *p;
 
-        printf("got: \"%s\"\n", s);
-   
+    int mode, *len;
+    while((mode = getop(s, len)) != EOF){
+
         switch(mode){
 
             case NUMBER:
-                
-                push(&s[0]);
+                p = alloc((*len) + 1) ;
+                strcp(p, s);
+                push(p);
                 break;
             case '\n':
-                printf("here.");
-                printf("%s", pop());
+                char *pop1;
+                pop1 = pop();
+                afree(pop1);
+                printf("%s", pop1);
                 putchar('A');
-                printf("%s", pop());
+                pop1 = pop();
+                afree(pop1);
+                printf("%s", pop1);
                 break;
             default:
                 printf("Yup, someething is wrong.\n");
@@ -65,7 +72,8 @@ char *pop(){
 }
 int k=0;
 char line[LINELIM];
-int getop(char s[]){
+int getop(char s[], int *len){
+    
     
     int j = 0, c ;
     
@@ -81,12 +89,10 @@ int getop(char s[]){
     s[1] = '\0';
 
     if(!isdigit(c) && (c != '-' && c!= '.')){
-        printf("R1, K is %d",k);
         return c;
     }
     if(c == '-'){
         if(!isdigit(line[k])){
-        printf("R2");
 
             return c;
         }
@@ -112,7 +118,7 @@ int getop(char s[]){
     if(c != EOF){
         k--;
     }
-    
+    *len = j;    
     s[j] = '\0';
 
     return NUMBER;
@@ -134,4 +140,30 @@ int getline(char *line, int limit){
 
     return i;
 
+}
+
+#define STORAEG 1000
+
+char storage[STORAEG];
+char *storagepointer = storage;
+
+
+char *alloc(int size){
+    if((storage + STORAEG - storagepointer ) >= size){
+        storagepointer = storagepointer + size;
+        return storagepointer-size;
+    }else{
+        printf("error: memory is full");
+        return 0;
+    }
+}
+
+void afree(char *p){
+    storagepointer = p;
+}
+
+void strcp(char *s1, char *s2){
+
+    while(*s1++ = *s2++)
+        ;
 }
