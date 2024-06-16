@@ -19,7 +19,7 @@ char *alloc(int size);
 void afree(char *p);
 
 void strcp(char *s1, char *s2); // copy s2 to s1
-
+int getlen(char *s);
 int main(int argc, char *argv[]){
     char s[LINELIM];
     char *p;
@@ -36,10 +36,6 @@ int main(int argc, char *argv[]){
                 break;
             case '\n':
                 char *pop1;
-                pop1 = pop();
-                afree(pop1);
-                printf("%s", pop1);
-                putchar('A');
                 pop1 = pop();
                 afree(pop1);
                 printf("%s", pop1);
@@ -166,4 +162,12 @@ void strcp(char *s1, char *s2){
 
     while(*s1++ = *s2++)
         ;
+}
+
+int getlen(char *s){
+    int len;
+    while(*s++){
+        len++;
+    }
+    return ++len;
 }
