@@ -18,11 +18,22 @@ char *pop();
 char *alloc(int size);
 void afree(char *p);
 
+void strconcat(char *s1, char *dest);
+
 void strcp(char *s1, char *s2); // copy s2 to s1
 int getlen(char *s);
 int main(int argc, char *argv[]){
     char s[LINELIM];
     char *p;
+    // char *s1 = "14";
+    // char *s2 = "15";
+    // p = alloc(8);
+    // strconcat(s1, p);
+    // strconcat(" + ", p+2);
+    // strconcat(s2, p+5);
+    // strconcat("", p+7);
+    // printf("%s", p);
+    // printf("length of 14 \\0 is: %d", getlen("14"));
 
     int mode, *len;
     while((mode = getop(s, len)) != EOF){
@@ -33,6 +44,26 @@ int main(int argc, char *argv[]){
                 p = alloc((*len) + 1) ;
                 strcp(p, s);
                 push(p);
+                break;
+            case '+':
+         
+                char *second = pop();
+                char *filler = " + ";
+                int length = getlen(second);
+                afree(second);
+                char *first = pop();
+                length += getlen(first);
+                length += getlen(filler);
+                afree(first);
+       
+                p = alloc(length+1); // one for \0
+                strconcat(first, p);
+                strconcat(filler, p);
+                strconcat(second, p);
+                strconcat("", p);
+                push(p);
+
+
                 break;
             case '\n':
                 char *pop1;
@@ -169,5 +200,18 @@ int getlen(char *s){
     while(*s++){
         len++;
     }
-    return ++len;
+    return len;
+}
+
+void strconcat(char *s1, char *dest){
+
+    while(*s1){
+        *dest = *s1;
+        s1++;
+        dest++;
+    
+    }
+    
+
+
 }
