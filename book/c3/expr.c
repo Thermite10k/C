@@ -27,62 +27,12 @@ void clean(char *p, int len);
 void sortinputarr(char optype);
 
 
-void sortinputarr(char optype){
-    char filler[10];
-    switch(optype){
-        case '+':
-            strcp(filler, " + ");
-            break;
-        case '*':
-            strcp(filler, " * ");
-            break;
-        case '/':
-            strcp(filler, " / ");
-            break;
-        case '-':
-            strcp(filler, " - ");
-            break;
-
-    }
-    char *p;
-    char *second = pop();
-    int length = getlen(second);
-    
-    char secondval[50];
-    
-    strcp(secondval, second);
-    afree(second);
-    char *first = pop();
-    length += getlen(first);
-    char firstval[50];
-    strcp(firstval, first);
-    afree(first);
-    length += getlen(filler);
-    p = alloc(length+3); // one for \0 two for ( )
-    clean(p, length+3);
-    strconcat("(", p);
-    strconcat(firstval, p);
-    strconcat(filler, p);
-    strconcat(secondval, p);
-    strconcat(")", p);
-    push(p);
-
-
-}
 
 
 int main(int argc, char *argv[]){
     char s[LINELIM];
     char *p;
-    // char *s1 = "14";
-    // char *s2 = "15";
-    // p = alloc(8);
-    // strconcat(s1, p);
-    // strconcat(" + ", p+2);
-    // strconcat(s2, p+5);
-    // strconcat("", p+7);
-    // printf("%s", p);
-    // printf("length of 14 \\0 is: %d", getlen("14"));
+ 
 
     int mode, *len;
     while((mode = getop(s, len)) != EOF){
@@ -263,4 +213,46 @@ void clean(char *p, int len){
     while(len--){
         *p++ = '\0';
     }
+}
+void sortinputarr(char optype){
+    char filler[10];
+    switch(optype){
+        case '+':
+            strcp(filler, " + ");
+            break;
+        case '*':
+            strcp(filler, " * ");
+            break;
+        case '/':
+            strcp(filler, " / ");
+            break;
+        case '-':
+            strcp(filler, " - ");
+            break;
+
+    }
+    char *p;
+    char *second = pop();
+    int length = getlen(second);
+    
+    char secondval[50];
+    
+    strcp(secondval, second);
+    afree(second);
+    char *first = pop();
+    length += getlen(first);
+    char firstval[50];
+    strcp(firstval, first);
+    afree(first);
+    length += getlen(filler);
+    p = alloc(length+3); // one for \0 two for ( )
+    clean(p, length+3);
+    strconcat("(", p);
+    strconcat(firstval, p);
+    strconcat(filler, p);
+    strconcat(secondval, p);
+    strconcat(")", p);
+    push(p);
+
+
 }
