@@ -22,6 +22,55 @@ void strconcat(char *s1, char *dest);
 
 void strcp(char *s1, char *s2); // copy s2 to s1
 int getlen(char *s);
+
+void clean(char *p, int len);
+void sortinputarr(char optype);
+
+
+void sortinputarr(char optype){
+    char filler[10];
+    switch(optype){
+        case '+':
+            strcp(filler, " + ");
+            break;
+        case '*':
+            strcp(filler, " * ");
+            break;
+        case '/':
+            strcp(filler, " / ");
+            break;
+        case '-':
+            strcp(filler, " - ");
+            break;
+
+    }
+    char *p;
+    char *second = pop();
+    int length = getlen(second);
+    
+    char secondval[50];
+    
+    strcp(secondval, second);
+    afree(second);
+    char *first = pop();
+    length += getlen(first);
+    char firstval[50];
+    strcp(firstval, first);
+    afree(first);
+    length += getlen(filler);
+    p = alloc(length+3); // one for \0 two for ( )
+    clean(p, length+3);
+    strconcat("(", p);
+    strconcat(firstval, p);
+    strconcat(filler, p);
+    strconcat(secondval, p);
+    strconcat(")", p);
+    push(p);
+
+
+}
+
+
 int main(int argc, char *argv[]){
     char s[LINELIM];
     char *p;
@@ -41,35 +90,27 @@ int main(int argc, char *argv[]){
         switch(mode){
 
             case NUMBER:
-                p = alloc((*len) + 1) ;
+                p = alloc((*len) + 1) ; // +1 accounts for \0 since len does not contain the \0
                 strcp(p, s);
                 push(p);
                 break;
-            case '+':
-         
-                char *second = pop();
-                char *filler = " + ";
-                int length = getlen(second);
-                afree(second);
-                char *first = pop();
-                length += getlen(first);
-                length += getlen(filler);
-                afree(first);
-       
-                p = alloc(length+1); // one for \0
-                strconcat(first, p);
-                strconcat(filler, p);
-                strconcat(second, p);
-                strconcat("", p);
-                push(p);
-
-
+             case '+':
+                 sortinputarr('+');
+                break;
+              case '-':
+                 sortinputarr('-');
+                break;
+            case '*':
+                 sortinputarr('*');
+                break;
+            case '/':
+                 sortinputarr('/');
                 break;
             case '\n':
                 char *pop1;
                 pop1 = pop();
                 afree(pop1);
-                printf("%s", pop1);
+                printf("%s\n", pop1);
                 break;
             default:
                 printf("Yup, someething is wrong.\n");
@@ -196,7 +237,7 @@ void strcp(char *s1, char *s2){
 }
 
 int getlen(char *s){
-    int len;
+    int len = 0;
     while(*s++){
         len++;
     }
@@ -204,7 +245,9 @@ int getlen(char *s){
 }
 
 void strconcat(char *s1, char *dest){
-
+    while(*dest){
+        dest++;
+    }
     while(*s1){
         *dest = *s1;
         s1++;
@@ -214,4 +257,10 @@ void strconcat(char *s1, char *dest){
     
 
 
+}
+
+void clean(char *p, int len){
+    while(len--){
+        *p++ = '\0';
+    }
 }
