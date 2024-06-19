@@ -4,7 +4,6 @@
 #define LIMIT 100
 /*
     This program utilizes dynamic storage and prints the last n (default 10) lines of input to output.
-    use -n flag to configure.
 */
 
 char *alloc(int size);
@@ -25,7 +24,7 @@ int main(int argc, char *argv[]){
     int nlines;
     if((nlines = readlines(lines, LIMIT))){
         int i = nval;
-        if(nlines > i){
+        if(nlines >= i){
             i =  nlines - i;
             nlines = nlines - i;
             while(nlines--){
@@ -58,12 +57,15 @@ char memory[20000];
 char *memp = memory;
 
 char *alloc(int size){
+    if(size < 0){
+        return NULL;
+    }
     if((memory + memsize - memp) > size){
         memp += size;
         return memp - size;
     }else{
         printf("error: memory is full.");
-        return 0;
+        return NULL;
     }
 
 }
