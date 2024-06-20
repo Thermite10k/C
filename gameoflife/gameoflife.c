@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define ROW 40
-#define COL 100
+#define COL 150
 #define DEAD 128 //47
 #define ALIVE 255 // 220
 #define MOD(a,  b) (((a%b))+b) % b
 // arr[row][col]
 
-char graphics[2] = {46,219};
+char graphics[2] = {176,219};
 
 void cleararray(char arr[ROW][COL]);
 void initialize(char arr[ROW][COL]);
@@ -27,9 +28,18 @@ int main(int argc, char *argv[]){
 
 
     while(1){
-        system("cls") ;   
+        //system("cls") ;   
         display(front);
         eval(back, front);
+        printf("\033[%dA\033[%dD",ROW, COL);
+        /*
+            \033 : ASCII code 27, start signals the start of a scape sequence
+            [ : begining of control sequence
+            A : move cursor up by ROW
+            D : move cursor left by COL
+        */
+        //memmove(front, back, sizeof(front));
+        //memcpy(front, back, sizeof(front));
         swaparrays(front, back);
         // for(double j=0; j < 10; j = j+0.16){
 
@@ -65,7 +75,7 @@ void display(char arr[ROW][COL]){
     for(y=0; y<ROW; y++){
   
         for(x=0; x< COL; x++){
-            printf("%c","-#"[(arr[y][x])]);
+            printf("%c",graphics[(arr[y][x])]);
         }
         printf("\n");
     }
