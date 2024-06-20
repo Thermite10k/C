@@ -1,29 +1,66 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define ROW 40
-#define COL 150
+#include <ctype.h>
+int ROW = 120;
+int COL = 450;
 #define DEAD 128 //47
 #define ALIVE 255 // 220
 #define MOD(a,  b) (((a%b))+b) % b
 // arr[row][col]
 
+/*
+    Command line arguments : -ry, -cx where y is the number of rows and x is the number of columns
+*/
+
 char graphics[2] = {176,219};
 
-void cleararray(char arr[ROW][COL]);
-void initialize(char arr[ROW][COL]);
-void display(char arr[ROW][COL]);
-int getneighbor(char arr[ROW][COL], int x, int y);
-void eval(char front[ROW][COL], char back[ROW][COL]); // we read back and update front
+void cleararray(char (*arr)[]);
+void initialize(char (*arr)[]);
+void display(char (*arr)[]);
+int getneighbor(char (*arr)[], int x, int y);
+void eval(char (*front)[], char (*back)[]); // we read back and update front
 void swaparrays(char (*arr1)[], char (*arr2)[] );
 
 int main(int argc, char *argv[]){
+
+    int *row,*col;
+    row = &ROW;
+    col = &COL;
+    *row = 0;
+    *col = 0;
+    int c;
+    if(argc > 1){
+        while(--argc && (*++argv)[0] == '-'){
+            while(c = *++argv[0]){
+                switch(c){
+                    case 'r':
+                        
+                        while(isdigit(*++argv[0])){
+           
+                            *row = *row * 10 + *argv[0] - '0';
+                        }
+                        break;
+                    case 'c':
+                        while(isdigit(*++argv[0])){
+                            *col = *col * 10 + *argv[0] - '0';
+                        }
+                        break;
+                }
+            }
+            
+        }
+    }
+
+    *row = *row ? *row : 40;
+    *col = *col ? *col : 60;
+
     char front[ROW][COL];
     char back[ROW][COL];
     cleararray(front);
     cleararray(back);
     initialize(front);
-
+//
 
 
 
