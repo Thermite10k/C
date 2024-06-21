@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <string.h>
 #define SPRINT(str) printf(#str" is %s\n", str)
-#define DPRINT(d) printf(#d" is %f\n", d)
+#define DPRINT(d) printf(#d" is %d\n", d)
 #define MAXLINES 5000
 #define MAXLINELEN 200
 char *linepter[MAXLINES];
+int numeric = 0, reverse = 0, fold = 0, fieldmode = 0, directory = 0 ;
 
 int readlines(char *lineptr[], int nlines);
-void writelines(char *linepter[], int nline);
+void writelines(char *linepter[], int nline, int reverse);
 
+char mytolower(char c);
 void qsort(char *lineptr[], int left, int right, int (*comp)(char *, char *));
 void swap(char *v[], int i, int j);
 int numcp(char *, char *);
@@ -20,9 +22,7 @@ void afree(char *p);
 void strcp(char *s1, char *s2);
 int main(int argc, char *argv[]){
     int nlines = 0;
-    int numeric, reverse;
     int c;
-   
     if(argc > 1){
         while(--argc && (*++argv)[0]== '-'){
             while( c = *++argv[0] ){
@@ -32,19 +32,29 @@ int main(int argc, char *argv[]){
                         break;
                     case 'r':
                         reverse = 1;
-                        break;   
+                        break;
+                    case 'f':
+                        fold = 1;
+                        break;
+                    case 'd':
+                        if(*(1+argv[0]) == 'f'){
+                            fieldmode = 1;
+                            break;
+                        }
+                        directory = 1;
+                        break;
+                    
 
                 }
             }
         }
     }
-
     if(((nlines = readlines(linepter, nlines)) >=0)){
 
         
         qsort(linepter, 0, nlines-1, (int(*)(char *, char *))(numeric ? numcp : strcmp2));
         
-        writelines(linepter, nlines);
+        writelines(linepter, nlines, reverse);
         
         return 0;
     }else{
@@ -90,15 +100,23 @@ int numcp(char *s1, char *s2){
    }
    return 0;
 }
+char mytolower(char c){
+    return((c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c);
+}
 int strcmp2(char *s1, char *s2){
 
-    while (*s1++ == *s2++){
-        ;
+
+    
+
+    while (*s1 == *s2 || (fold &&( mytolower(*s1) == mytolower (*s2)))){
+        s1++;
+        s2++;
+        
     }
     if(*s1 == '\0')
         return 0;
 
-    return(*s1 < *s2) ? -1 : 1;
+    return(*s1 < *s2 ||( fold && (mytolower(*s1) < mytolower(*s2)))) ? -1 : 1;
 }
 double atof(char *s){
     double val = 0, power = 1;
@@ -128,6 +146,7 @@ double atof(char *s){
 int getline(char *line, int limit){
     int c, i =0;
     while(--limit > 0 && (c = getchar()) != EOF && c!='\n'){
+        
         *(line+i++) = c;
     }
     if(c=='\n')
@@ -183,10 +202,12 @@ int readlines(char *lineptr[], int nlines){
     
     return nline;
 }
-void writelines(char *linepter[], int nline){
+void writelines(char *linepter[], int nline, int reverse){
     int i = 0;
-
-    for(i=0; i<nline;i++){
+    if (reverse){
+        i = nline -1;    
+    }
+    for(i; (reverse ? i>=0 : i < nline);(reverse ? i-- : i++)){
         printf("%s\n", linepter[i]);
     }
 }
