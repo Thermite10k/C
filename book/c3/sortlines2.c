@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #define SPRINT(str) printf(#str" is %s\n", str)
 #define DPRINT(d) printf(#d" is %d\n", d)
 #define MAXLINES 5000
@@ -10,6 +11,7 @@ int numeric = 0, reverse = 0, fold = 0, fieldmode = 0, directory = 0 ;
 int readlines(char *lineptr[], int nlines);
 void writelines(char *linepter[], int nline, int reverse);
 
+int validdirectorymode(char *s);
 char mytolower(char c);
 void qsort(char *lineptr[], int left, int right, int (*comp)(char *, char *));
 void swap(char *v[], int i, int j);
@@ -103,9 +105,14 @@ int numcp(char *s1, char *s2){
 char mytolower(char c){
     return((c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c);
 }
+int validdirectorymode(char *s){
+    return(((isdigit(*s)) || (*(s+1) == '\0')) ? 1 : 0);
+}
 int strcmp2(char *s1, char *s2){
 
-
+    if(directory && (!validdirectorymode(s1) || !validdirectorymode(s2))){
+        return 0;
+    }
     
 
     while (*s1 == *s2 || (fold &&( mytolower(*s1) == mytolower (*s2)))){
