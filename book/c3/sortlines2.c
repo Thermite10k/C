@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #define SPRINT(str) printf(#str" is %s\n", str)
-#define DPRINT(d) printf(#d" is %d\n", d)
+#define DPRINT(d) printf(#d" is %f\n", d)
 #define MAXLINES 5000
 #define MAXLINELEN 200
 char *linepter[MAXLINES];
@@ -22,6 +22,7 @@ int main(int argc, char *argv[]){
     int nlines = 0;
     int numeric, reverse;
     int c;
+   
     if(argc > 1){
         while(--argc && (*++argv)[0]== '-'){
             while( c = *++argv[0] ){
@@ -81,6 +82,7 @@ int numcp(char *s1, char *s2){
 
    v1 = atof(s1);
    v2 = atof(s2);
+
    if(v1 < v2){
     return -1;
    }else if (v1 > v2){
@@ -103,10 +105,13 @@ double atof(char *s){
     int hasdecimal = 0, sign = 1;
     if(*s == '-'){
         sign = -1;
+        s++;
     }
-    while(*s++){
+    while(*s){
+ 
         if(*s == '.'){
             hasdecimal = 1;
+            s++;
             power = 10 * power;
             continue;
         }
@@ -114,6 +119,7 @@ double atof(char *s){
         if(hasdecimal){
             power *= 10;
         }
+        s++;
     }
 
     return val/power*sign;
