@@ -1,12 +1,14 @@
 #include <stdio.h>
 
 int setbits(int x, int p, int n, int y);
+int setbits2(int x, int p, int n, int y);
 
 /*Return x with the n bits that begin at position p  set to the rightmost n bits of y, leaving the rest of the bits unchanged*/
 
 int main(void){
-    int x = 721, y = 1250, p = 8 , n = 5;
-    printf("%d", setbits(x,p,n,y));
+    int x = 4736, y = 110, p = 11 , n = 5;
+    printf("%d \n", setbits(x,p,n,y));
+    printf("%d \n", setbits2(x,p,n,y));
     return 0;
 }
 
@@ -23,4 +25,12 @@ int setbits(int x, int p, int n, int y){
     x = x | oldx; // 1101 1100 | 1101 0011 => 1101 1111
     
     return x;
+}
+
+int setbits2(int x, int p, int n, int y){
+
+    x = x &( ~(~0 << (p+1-n)) | ~0 << p+1 );
+    y = (y & ~(~0 << n))<< (p+1-n);
+    return x | y;
+
 }
