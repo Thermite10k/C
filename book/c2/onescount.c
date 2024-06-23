@@ -6,7 +6,7 @@ int onescountfast(long unsigned x);
 
 int main(void){
 
-    long unsigned int x = 41841687684153; // 1101
+    long unsigned int x = 13; // 1101
     clock_t start = clock();
     printf("%d\n", onescount(x));
     clock_t end = clock();
