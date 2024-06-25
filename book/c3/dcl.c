@@ -2,6 +2,8 @@
 #include <string.h>
 #include <ctype.h>
 #include "getch.h"
+// complile with getch.c
+
 
 #define MAXTOKEN 100
 
@@ -17,22 +19,89 @@ char name[MAXTOKEN]; // last token string
 char datatype[MAXTOKEN]; // char, int, etc.
 char out[MAXTOKEN];
 
-int main(){
 
-    while(gettoken() != EOF){
-        strcpy(datatype, token);
-        out[0] = '\0';
-        dcl();
-        if(tokentype != '\n'){
-            printf("Syntax error\n");
+int main(int argc, char *argv[]){
+
+    int c, type, mode = 0; // mode 0 = DCL = -d , 1 = undcl = -u. default is DCL
+    char temp[MAXTOKEN];
+    if(argc > 1){
+        while(--argc && (*++argv)[0] == '-'){
+            while((c = *++argv[0])){
+                switch(c){
+                    case 'u':
+                        mode = 1;
+                        break;
+                    case 'd':
+                        mode = 0;
+                        break;
+
+                }
+            }
         }
-        printf("%s: %s %s\n", name, out, datatype);
     }
+    printf("Mode if %d\n", mode);
+    switch(mode){
+        case 0:
+            while(gettoken() != EOF){
+            strcpy(datatype, token);
+            out[0] = '\0';
+            dcl();
+            if(tokentype != '\n'){
+                printf("Syntax error\n");
+            }
+            printf("%s: %s %s\n", name, out, datatype);
+            break;
+        }
+        case 1:
+            while(gettoken() != EOF){
+                strcpy(out, token);
+                while((type = gettoken()) != '\n'){
+                    if(type == PARENS || type == BRACKETS){
+                        strcpy(out, token);
+                    } else if (type == '*'){
+                        sprintf(temp, "(*%s), out");
+                        strcpy(out, temp);
+                    }else if (type == NAME){
+                        sprintf(temp, "%s %s", token, out);
+                        strcpy(out, temp);
+                    }else{
+                        printf("Invalid input at %s\n", token);
+                    }
+                    
+                    
+                }
+                    printf("%s\n", out);
+            }
+
+ 
+    }
+        
+
+    
     return 0;
 
 }
 /*
     Token is a name, pair of parentheses, a pair of brackets perhaps includeing a number, or any other single character
+*/
+
+/*
+    Token is a name, pair of parentheses, a pair of brackets perhaps includeing a number, or any other single character
+*/
+
+/*
+    DCL:
+        optional *'s + direct-dcl
+
+    direct-dcl:
+        NAME
+        (DCL)
+        direct-dcl()
+        direct-dcl[optional-number]
+
+    something like (*PFA[])() would be parsed as: (remember [] binds tighter than *)
+    PFA -> NAME ->direct-dcl -> [] -> direct-dcl -> * -> DCL -> (DCL) ->direct-dcl -> direct-dcl() -> dcl.
+
 */
 
 void dcl(void){
