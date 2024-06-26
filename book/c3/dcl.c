@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
                     if(type == PARENS || type == BRACKETS){
                         strcpy(out, token);
                     } else if (type == '*'){
-                        sprintf(temp, "(*%s), out");
+                        sprintf(temp, "(*%s)", out);
                         strcpy(out, temp);
                     }else if (type == NAME){
                         sprintf(temp, "%s %s", token, out);
@@ -67,12 +67,10 @@ int main(int argc, char *argv[]){
                     }else{
                         printf("Invalid input at %s\n", token);
                     }
-                    
-                    
                 }
-                    printf("%s\n", out);
+                printf("%s\n", out);
             }
-
+                break;
  
     }
         
