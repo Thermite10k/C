@@ -27,6 +27,7 @@ int main(){
     struct point p1 = makepoint(10, 20);
     struct point p2 = {30, 40};
     struct point p3 = addpoint(p1, p2);
+    struct point p4 = {.y = 30, .x = 100};
 
    middle = makepoint(
     ((screen.pt1.x + screen.pt2.x)/2),
@@ -40,6 +41,7 @@ int main(){
     struct point in = makepoint(middle.x, middle.y);
     printf("%d\n", ptinbounds(screen, in));
     printf("%d\n", ptinbounds(screen, out));
+    printf("%d\n", p4.x);
 
     return 0;
 }
