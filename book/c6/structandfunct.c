@@ -29,6 +29,11 @@ int main(){
     struct point p2 = {30, 40};
     struct point p3 = addpoint(p1, p2);
     struct point p4 = {.y = 30, .x = 100};
+    struct point *pp;
+    pp = &p4;
+
+    printf("The p4.x from pp is: %d\n", (*pp).x); 
+    printf("The p4.x from pp is: %d\n", pp->x);  // pointer->member is the same as (*pointer).member
 
    middle = makepoint(
     ((screen.pt1.x + screen.pt2.x)/2),
@@ -60,7 +65,20 @@ int main(){
     printf("%d\n", notcanonical.pt2.x);
     printf("%d\n", notcanonical.pt2.y);
     
+    // now let's make a structure and assign a pointer p to it.
 
+    struct {int len; struct point pt1; int *ptr;} *p;
+    p->len = 50;
+    int testint = 50;
+    p->ptr = &testint;
+    testint++;
+    printf("new test int is %d, the ptr is :%d\n", testint, *p->ptr);
+    // we have an int, we point to it, we increment the int and then the pointer has the updated value
+    ++p->len; // increments len not p because the precedence of -> is higher than ++, it's like : ++(p->len);
+    struct point pointerpt1 = makepoint(345, middle.y);
+    p->pt1 =  pointerpt1;
+    printf("len is %d\n", p->len);
+    printf("pt.x is %d\n", p->pt1.x);
     return 0;
 }
 
