@@ -25,7 +25,12 @@ struct key keytab[] = {
 
 could've been declated like this too:
 
-struct key {...} keytab[NKEYS] // to add values// = {"name1", 0, name2, 0,...};
+struct key {   {"break", 0},
+    {"char", 0},
+    {"int", 0},
+    {"return", 0},
+    {"void", 0},
+} keytab[NKEYS] // to add values// = {"name1", 0, name2, 0,...};
 
 */
 int getch(void);
@@ -42,7 +47,7 @@ int main(int argc, char* argv[]){
 
     while (getword(word, MAXWORD) != EOF){
         if(isalpha(word[0])){
-
+            
             if((n = binsearch(word, keytab, NKEYS)) >= 0){
                 keytab[n].count++;
             }
@@ -81,14 +86,30 @@ int binsearch(char *word, struct key tab[], int n){
 
 int getword(char *word, int lim){
     int c;
-    
+    static int incomment = 0;    
     char *w = word;
-
+    while(incomment){
+        while((c = getch()) != '*'){
+            ;
+        }
+        if ('/' == (c = getch())){
+            incomment = 0;
+        }else{
+            ungetch(c);
+        }
+    }
     while(isspace(c = getch())){
         ;
     }
     if(c != EOF){
         *w++ = c;
+    }
+    if('/' == c){
+        if((c = getch()) == '*'){
+            incomment = 1;
+        }else{
+        ungetch(c);
+        }
     }
     if(!isalpha(c)){
         *w = '\0';
