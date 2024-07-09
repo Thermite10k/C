@@ -13,7 +13,7 @@ struct key {
     char *name;
     int count;
 };
-
+// the keytab has to be sorted
 struct key keytab[] = {
     {"char", 0},
     {"DEFINE", 0},
