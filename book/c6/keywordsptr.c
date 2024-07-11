@@ -6,7 +6,7 @@
 int getword(char *, int limit);
 int getch(void);
 void ungetch(int c);
-struct key *binserch(char *name, struct key *keytab, int len);
+struct key *binsearch(char *name, struct key *keytab, int len);
 
 
 struct key {
@@ -18,18 +18,19 @@ struct key keytab[] = {
     {"char", 0},
     {"DEFINE", 0},
     {"int", 0},
-}
+};
 
 int main(void){
     
     char word[MAXWORD];
     struct key *p;
     while(getword(word, MAXWORD) > 0){
+        printf("%d\n", NKEYS);
         if((p = binsearch(word, keytab, NKEYS)) != NULL){
             p->count++; // ++p->count
         }
     }
-    for(p = keytab; P , keytab + NKEYS; p++){
+    for(p = keytab; p <  keytab + NKEYS; p++){
         if(p->count > 0){
             printf("Count of %s: %d\n", p->name, p->count);
         }
@@ -41,11 +42,11 @@ int main(void){
 struct key *binsearch(char *name, struct key *tab, int len){
     int cond = 0;
     struct key *low = &tab[0];
-    struct key *high = &tab[n-1];
+    struct key *high = &tab[len];
     struct key *mid;
 
     while(low <= high){
-        mid = high + (high - low) / 2;
+        mid = low + (high - low) / 2;
 
         if((cond = strcmp(mid->name, name)) < 0){
             high = mid;
@@ -65,7 +66,7 @@ int getword(char *word, int limit){
     while(isspace(c = getch())){
         ;
     }
-    int *w = word;
+    char *w = word;
 
     if(c != EOF)
         *w++ = c;
@@ -97,7 +98,7 @@ int getch(void){
 }
 
 void ungetch(int c){
-    if(charbufferpointer < CHBUFF){
+    if(chbuffpointer < CHBUFF){
         chbuffer[chbuffpointer++] = c;
     }else{
         printf("error: char buffer is full");
