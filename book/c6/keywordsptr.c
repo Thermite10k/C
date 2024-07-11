@@ -31,7 +31,7 @@ int main(void){
     }
     for(p = keytab; P , keytab + NKEYS; p++){
         if(p->count > 0){
-            printf("Count of %s: %d\m", p->name, p->count);
+            printf("Count of %s: %d\n", p->name, p->count);
         }
     }
 
