@@ -10,7 +10,7 @@ void ungetch(char c);
 int main(int argc, char *argv[]){
     // [*, *, ..., *]
     int c;
-    int val = 0;
+    int val = 0; // how manay chars should be similar? 
     
     while(--argc > 0 && **++argv == '-'){
         while((c = *++*argv)){
