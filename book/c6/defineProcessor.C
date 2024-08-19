@@ -21,6 +21,47 @@ int getword(char *word, int limit);
 
 int main(int argc, char *argv[]){
 
+    char word[MAXWORD], *def = NULL, *name = NULL;
+    int show = 0, isdefine = 0;
+    struct nlist *np;
+    while(getword(word, MAXWORD) != EOF){
+        if('#' == word[0]){
+            show = 1;
+            
+            continue;
+        }
+        if(show){
+           
+            if(strcmp("define", word) == 0){
+                isdefine = 1;
+                continue;
+            }else{
+                show = 0;
+            }
+        }   
+        if(isdefine){
+            // now we have the name, and the next is it's defenition;
+            free(name);
+            free(def);
+            name = malloc(strlen(word) + 1);
+            strcpy(name, word);
+            getword(word, MAXWORD);
+            def = malloc(strlen(word) + 1);
+            strcpy(def, word);
+            install(name, def);
+            isdefine = 0;
+            show = 0;
+        }
+    
+    if((np = lookup(word))){
+        printf("%s\n", np->defn);
+    }else{
+
+        printf("%s\n", word);
+    }
+
+    }
+
     return 0;
 }
 
@@ -53,6 +94,7 @@ struct nlist *lookup(char *name){
 }
 unsigned hash(char *name){
     unsigned hashval;
+
 
     for(hashval = 0; *name != '\0'; name++){
         hashval = *name + 32 * hashval;
@@ -88,7 +130,7 @@ int getword(char *word, int limit){
     if(c != EOF){
         *w++ = c;
     }
-    if(!isalpha(c)){
+    if(!isalnum(c)){
         *w = '\0';
         return c;
     }
