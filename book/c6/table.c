@@ -6,6 +6,7 @@
 unsigned hash(char *s);
 struct nlist *lookup(char *s);
 struct nlist *install(char *name, char *defn);
+void undef(char *name);
 struct nlist {
     struct nlist *next;
     char *name;
@@ -31,7 +32,7 @@ struct nlist *lookup(char *s){
     struct nlist *np;
 
     for(np = hashtab[hash(s)]; np != NULL; np = np -> next){
-        if(strcmp(np->name, s)){
+        if(strcmp(np->name, s) == 0){
             return np;
         }
     }
@@ -59,4 +60,26 @@ struct nlist *install(char *name, char *defn){
         return NULL;
     }
     return np;
+}
+
+void undef(char *name){
+    struct nlist *np, *prev;
+    unsigned hashval = hash(name);
+
+    np = hashtab[hashval];
+    
+    for(np; np != NULL; np = np->next){
+        if(strcmp(name, np->name) == 0){
+            if(prev == NULL){
+                hashtab[hashval] = np->next;
+            }else{
+
+                prev->next = np->next;
+            }
+            free(np->name);
+            free(np->defn);
+            free(np);
+        }
+        prev = np;
+    }
 }
