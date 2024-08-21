@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <ctype.h>
 
-struct {
+struct inputFlags {
     unsigned upper : 1;
     unsigned lower : 1;
-} flags;
+};
 
 int main(int argc, char *argv[]){
+    struct inputFlags flags;
     int mode = 0, c;
     flags.lower = 0;
     flags.upper = 0;
