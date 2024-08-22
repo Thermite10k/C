@@ -12,6 +12,9 @@ int main(void){
     int len;
     FILE *fp;
     fp = fopen("key.txt", "r");
+    if(fp == NULL){
+        return 1;
+    }
 
     while((len = getline(line, MAXLINE, fp)) != '\0'){
         len--; // to skip the \0
