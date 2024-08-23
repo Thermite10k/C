@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#define MAXLINE 1000
 
 struct trieNode {
     struct trieNode *child[26];
@@ -13,49 +14,57 @@ struct trieNode *getNode(void);
 void insert(struct trieNode *root, const char *key, int value);
 int search(struct trieNode *root, const char *key);
 struct trieNode *seek(struct trieNode *root, char *key);
+int getline(int limit, char *line, FILE *fp);
+
+void getDigits(int *fd, int *sd, struct trieNode *root, char *line);
+
 
 int main(void){
-
     int numbersCount = 0, i = 0;
-    int firstDigit = -1, secondDigit = -1;
+    int count = 0;
+    int *fd, *ld, len = 0;
+    unsigned  long int answer = 0;
     char *numbers[] = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
-    numbersCount = sizeof numbers / sizeof numbers[0];
     struct trieNode *root = getNode();
+    FILE *fp;
+    char line[MAXLINE];
+    fp = fopen("key.txt", "r");
+
+    numbersCount = sizeof numbers / sizeof numbers[0];
+
+    fd = (int *)malloc(sizeof(int));
+    ld = (int *)malloc(sizeof(int));
+
+    if(fd == NULL || ld == NULL){
+        printf("Memory allocation failed.");
+        return 1;
+    }
+
+    *fd = -1;
+    *ld = -1;
 
     for(i=0; i<numbersCount; i++){
         insert(root, numbers[i], i+1);
     }
-    char *testStr = {"Thi8sixStrfone4one"};
-    //printf("%d", search(root, "three"));
-    char *charpt = testStr;
-    struct trieNode *curr;
-    while(*testStr){
-        if(isdigit(*testStr)){
-            if(firstDigit == -1){
-                firstDigit = *testStr - '0';
-            }else{
-                secondDigit = *testStr - '0';
-            }
-            
-        }        
-        curr = root;
-        charpt = testStr;
-        while((curr = seek(curr, charpt)) != NULL){ // can the char be the begining of a digit? if yes, then go until it isn't. if digit, print it.
-            if(curr->isEndOfWord){
-                if(firstDigit == -1){
-                    firstDigit = curr->value;
-                }else{
-                    secondDigit = curr->value;
-                }
-                testStr = charpt;
-                break;
-            }
-            charpt++;
+    //5rxbkctnsfeightxpbllldgjxqdrd3dmt
+    //xoneight2five3fqmc6zrgcbzbzghpvbzt
+//    char *testStr = {"5rxbkctnsfeightxpbllldgjxqdrd3dmt"};
+    while((len = getline(MAXLINE, line, fp)) > 0){
+        count++;
+        *fd = -1;
+        *ld = -1;
+        //printf("%s\n", line);
+        getDigits(fd, ld, root, line);
+        //printf("%d, %d\n", *fd, *ld);
+        answer += (10 * (*fd) )+ *ld;
         }
-        testStr++;
-    }
+    // getDigits(fd, ld, root, testStr);
+    
+   printf("%ld", answer);
+   printf("\n %d: lines", count);
 
-    printf("%d : first, %d : last.\n", firstDigit, secondDigit);
+    
+
 
     return 0;
 }
@@ -105,4 +114,56 @@ struct trieNode *seek(struct trieNode *root, char *key){
 
     }
     return NULL;
+}
+
+
+void getDigits(int *fd, int *sd, struct trieNode *root, char *line){
+    char *testStr = line;
+    char *charpt = line;
+    struct trieNode *curr;
+    while(*testStr){
+
+        curr = root;
+        charpt = testStr;
+  
+        if(isdigit(*testStr)){
+            if(*fd == -1){
+                *fd = *testStr - '0';
+            }else{
+                *sd = *testStr - '0';
+            }
+            
+        }else{        
+            while(*charpt && (curr = seek(curr, charpt)) != NULL){ // can the char be the begining of a digit? if yes, then go until it isn't. if digit, print it.
+                if(curr->isEndOfWord){
+                    if(*fd == -1){
+                        *fd = curr->value;
+                    }else{
+                        *sd = curr->value;
+                    }
+            
+                    break;
+                }
+                charpt++;
+            }
+        }
+        testStr++;
+    }
+
+    if(*sd == -1){
+        *sd = *fd;
+    }   
+
+}
+int getline(int limit, char *line, FILE *fp){
+    int c, i;
+    for(i=0; (i < limit - 1) && (c = getc(fp)) != EOF && c != '\n'; i++){
+        line[i] = c;
+    }
+    if(c == '\n'){
+        line[i++] = c;
+    }
+    line[i] = '\0';
+
+    return i;
 }
