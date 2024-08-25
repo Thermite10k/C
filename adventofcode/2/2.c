@@ -11,42 +11,50 @@
 struct nlist {
     struct nlist *next;
     char *name;
-    int defn;
+    int value;
+    int maxVal;
 };
 struct color {
     char *color;
     int value;
+    int maxVal;
 };
+
 struct color colors[] = {
-    {"red", 0},
-    {"green", 1},
-    {"blue", 2},
-    {"game", -1}
+    {"red", 0, 12},
+    {"green", 0, 13},
+    {"blue", 0, 14},
+
 };
 
 static struct nlist *hashtab[HASHSIZE];
 
 struct nlist *lookup(char *name);
 unsigned hash(char *name);
-struct nlist *install(char *name, int defn);
+struct nlist *install(char *name, int value, int maxVal);
 
 void addkeys(int nkeys, struct color *);
+
 
 int getword(int limit, char *word, FILE *fp);
 char getfilechar(FILE *fp);
 void ungetfilechar(char c);
 unsigned hash(char *word);
-void wordprocessor(char *word);
+int wordprocessor(char *word);
 
 int main(void){
     FILE *fp;
+    int answer = 0;
     char word[MAXWORD];
     addkeys(NKEYS, colors);
     fp = fopen("key.txt", "r");
     while( getword(MAXWORD, word, fp) != EOF){
-        printf("%s\n", word);
+        answer += wordprocessor(word);
+        
     }
-    printf("\n%d", lookup("green")->defn  );
+ 
+    printf("%d\n", answer);
+
     return 0;
 }
 
@@ -97,10 +105,54 @@ void ungetfilechar(char c){
     }
 }
 
-void wordprocessor(char *word){
-    static int red = 0;
-    static int green = 0;
-    static int blue = 0;
+int wordprocessor(char *word){
+    struct nlist *np;
+    static int value = 0;
+    static int isIndex = 0;
+    static int index = 0;
+    int isValidRound = 1, i = 0;
+    
+    if(atoi(word)){
+        if(isIndex){
+            isIndex = 0;
+            index = atoi(word);
+        }else{
+            value = atoi(word);
+        }
+        return 0;
+    }
+    if(strcmp(word, "Game") == 0){
+        if(value > 0){
+            // if one game is over, calculate the results.
+            for(i=0; i<NKEYS; i++){
+                np = lookup(colors[i].color);
+                if(np->value > np->maxVal){
+                    isValidRound = 0;
+                }
+                np->value = 0;
+            }
+            
+            if(isValidRound){
+                
+                isIndex = 1;
+                return(index);
+
+            }
+
+            
+        }
+        isIndex = 1;
+        return 0;
+    }
+    
+    if(strlen(word) > 1 && (np = lookup(word)) != NULL){
+
+        install(word, (np->value + value), np->maxVal);
+                
+    }
+
+
+    return 0;
 
 }
 
@@ -124,7 +176,7 @@ unsigned hash(char *name){
 
     return hashval % HASHSIZE;
 }
-struct nlist *install(char *name, int defn){
+struct nlist *install(char *name, int value, int maxVal){
     struct nlist *np;
     unsigned hashval = 0;
     if((np = lookup(name)) == NULL){
@@ -136,16 +188,17 @@ struct nlist *install(char *name, int defn){
         hashval = hash(name);
         hashtab[hashval] = np;
     }
-    np->defn = defn;
+    np->value = value;
+    np->maxVal = maxVal;
     return np;
 }
 void addkeys(int nkeys, struct color *colors){
     int i = 0;
     
     for(i; i<nkeys; i++){
-        printf("adding %s , %d", colors[i].color, colors[i].value);
-        if((install(colors[i].color, colors[i].value)) == NULL){
-            printf("Could not add colors\n");
+ 
+        if((install(colors[i].color, colors[i].value, colors[i].maxVal)) == NULL){
+         
         }
     }
 }
