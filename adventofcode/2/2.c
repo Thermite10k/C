@@ -126,6 +126,7 @@ int wordprocessor(char *word){
             // if one game is over, calculate the results.
             for(i=0; i<NKEYS; i++){
                 np = lookup(colors[i].color);
+                //printf("Game %d: %s, %d out of %d\n",index,np->name, np->value, np->maxVal );
                 if(np->value > np->maxVal){
                     isValidRound = 0;
                 }
@@ -147,7 +148,7 @@ int wordprocessor(char *word){
     
     if(strlen(word) > 1 && (np = lookup(word)) != NULL){
 
-        install(word, (np->value + value), np->maxVal);
+        install(word, MAX(np->value , value), np->maxVal);
                 
     }
 
