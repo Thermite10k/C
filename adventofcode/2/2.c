@@ -140,7 +140,7 @@ int wordprocessor(char *word, unsigned *powerset){
             
             *powerset += localset;
             if(isValidRound){
-                localset = 1;
+       
                 isIndex = 1;
                 return(index);
 
