@@ -40,20 +40,23 @@ int getword(int limit, char *word, FILE *fp);
 char getfilechar(FILE *fp);
 void ungetfilechar(char c);
 unsigned hash(char *word);
-int wordprocessor(char *word);
+int wordprocessor(char *word, unsigned *powerset);
 
 int main(void){
     FILE *fp;
     int answer = 0;
+    unsigned *powerset = (unsigned *) malloc(sizeof(unsigned));
+    *powerset = 0;
     char word[MAXWORD];
     addkeys(NKEYS, colors);
     fp = fopen("key.txt", "r");
     while( getword(MAXWORD, word, fp) != EOF){
-        answer += wordprocessor(word);
+        answer += wordprocessor(word, powerset);
         
     }
  
     printf("%d\n", answer);
+    printf("%d\n", *powerset);
 
     return 0;
 }
@@ -105,12 +108,13 @@ void ungetfilechar(char c){
     }
 }
 
-int wordprocessor(char *word){
+int wordprocessor(char *word, unsigned *powerset){
     struct nlist *np;
     static int value = 0;
     static int isIndex = 0;
     static int index = 0;
     int isValidRound = 1, i = 0;
+    unsigned localset = 1;
     
     if(atoi(word)){
         if(isIndex){
@@ -126,15 +130,17 @@ int wordprocessor(char *word){
             // if one game is over, calculate the results.
             for(i=0; i<NKEYS; i++){
                 np = lookup(colors[i].color);
-                //printf("Game %d: %s, %d out of %d\n",index,np->name, np->value, np->maxVal );
+                printf("Game %d: %s, %d out of %d\n",index,np->name, np->value, np->maxVal );
+                localset *= np->value;
                 if(np->value > np->maxVal){
                     isValidRound = 0;
                 }
                 np->value = 0;
             }
             
+            *powerset += localset;
             if(isValidRound){
-                
+                localset = 1;
                 isIndex = 1;
                 return(index);
 
