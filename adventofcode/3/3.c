@@ -26,11 +26,11 @@ int main(void){
     fp = fopen("key.txt", "r");
     while((length = getfileline(MAXLINE, fp, line))){
         //printf("Line: \t%sLine: \t%d\n", line, length);
-        *pp = (char *)malloc(strlen(line) + 1);
-        memcpy(*pp, line, strlen(line) + 1);
+        *pp = (char *)malloc(length);
+        memcpy(*pp, line, length);
         *pp++;
         (*ROWS)++;
-        *COLS = MAX(*COLS, length);
+        *COLS = MAX(*COLS, length-1);
     }
     printf("%d rows.\n", *ROWS);
     printf("%d cols.\n", *COLS);
@@ -41,7 +41,7 @@ int main(void){
     line = *pp;
    
 
-        printf("%c", puzzle[9][1]);
+        printf("%c", puzzle[9][9]);
     
 
     
