@@ -8,9 +8,7 @@
 
 #define MAX(a,b) ((a > b) ? a : b)
 
-//int getword(int limit, char *word, FILE *fp);
-//char getfilechar(FILE *fp);
-//void ungetfilechar(char c);
+
 int evaluate(char (*)[], int x, int y);
 int iteratepuzzle(char **puzzle, int rows, int cols);
 int getfileline(int limit, FILE *fp, char *line);
@@ -18,6 +16,9 @@ int getwordfromline(char **line, char *word, int limit);
 int myatoi(char *str);
 int check(char **puzzle, int x, int y, int rows, int cols, int length);
 int isvalidsymbol(char value);
+int getneighbordigit(char **puzzle, int x, int y, int rows, int cols);
+int getneighbornumber(char **puzzle, int x, int y);
+
 int main(void){
     char *line = (char *)malloc(MAXLINE); // char line[maxline] is also valid.
     int length = 0; // columns
@@ -47,11 +48,10 @@ int main(void){
     printf("Answer: %d\n", answer);
 
 
+
     return 0;
 }
-//int getword(int limit, char *word);
-//char getfilechar(FILE *fp);
-//void ungetfilechar(char c);
+
 int evaluate(char (*)[], int x, int y){
     return 0;
 }
@@ -70,7 +70,7 @@ int getfileline(int limit, FILE *fp, char *line){ // char *line[] is an array of
 }
 
 int iteratepuzzle(char **puzzle, int rows, int cols){
-    int x = 0, y = 0, length = 0, isvalid = 0, dy = -1;
+    int x = 0, y = 0, length = 0, isvalid = 0, gearRatio = 0;
     int answer = 0;
     char word[MAXWORD];
     char *lineptr;
@@ -92,7 +92,7 @@ int iteratepuzzle(char **puzzle, int rows, int cols){
                     if(!isvalid && ((y-1) >=0) ){
                         isvalid = check(puzzle, x, y-1, rows, cols, length);
                     }
-                    if(!isvalid && (y+1 < rows)){ // 10 rows so index from 0 to 9.
+                    if(!isvalid && (y+1 < rows)){ // if we have 10 rows, index is from 0 to 9.
                         isvalid = check(puzzle, x, y+1, rows, cols, length);
                     }
 
@@ -100,11 +100,14 @@ int iteratepuzzle(char **puzzle, int rows, int cols){
                         answer += myatoi(word);
                     }
                 }
+                if(*word == '*'){
+                    gearRatio += getneighbordigit(puzzle, x-length, y, rows, cols);
+                }
         
             }
         x = 0;
     }
-
+    printf("Gear Ratio: %d\n", gearRatio);
     return answer;
 }
 int getwordfromline(char **line, char *word, int limit){
@@ -129,8 +132,6 @@ int getwordfromline(char **line, char *word, int limit){
         if(!isalnum(*w = **line)){
             break;
         }
-        
-
     }
 
     *w = '\0';
@@ -172,6 +173,72 @@ int check(char **puzzle, int x, int y, int rows, int cols, int length){
 }
 int isvalidsymbol(char value){
                 //printf("Checking %c\n", value);
-    
+   // anything is a valid symbol as long as it's not alnum and it's not a period 
     return(!isalnum(value) && value != '.');
+}
+int getneighbordigit(char **puzzle, int x, int y, int rows, int cols){
+    int firstNumber = 1, secondNumber = 1, checkNumber = 1;
+    /*
+          23779   | Get a digiti and see what number it belongs too, get the number and save it.
+            *     | Get the second digit, if any, and store it in the second var. if you come across
+            46    | a new digit, get its number and if it's not the same as the second number, terminate.
+    */
+    if((x-1) >= 0){ // if anyhting is to the left (x-1), check it.
+        if(isdigit(puzzle[y][x-1])){
+            if(firstNumber == 1){
+                firstNumber = getneighbornumber(puzzle, x-1, y);
+              
+            }else{
+                checkNumber = getneighbornumber(puzzle, x-1, y);
+                if(secondNumber == 1){
+                    secondNumber = checkNumber;
+                }else if(secondNumber != checkNumber){
+                    return 0;
+                }
+            }
+        }
+    }
+    if(isdigit(puzzle[y][x])){// for upper and lower rows
+        if(firstNumber == 1){
+            firstNumber = getneighbornumber(puzzle, x, y);
+        }else{
+            checkNumber = getneighbornumber(puzzle, x, y);
+            if(secondNumber == 1){
+                secondNumber = checkNumber;
+            }else if(secondNumber != checkNumber){
+                return 0;
+            }
+        }
+    }
+    if((x+1) < cols){// checking the right side.
+        if(isdigit(puzzle[y][x+1])){
+            if(firstNumber == 1){
+                firstNumber = getneighbornumber(puzzle, x+1, y);
+            }else{
+                checkNumber = getneighbornumber(puzzle, x+1, y);
+                if(secondNumber == 1){
+                    secondNumber = checkNumber;
+                }else if(secondNumber != checkNumber){
+                    return 0;
+                }
+
+            }
+        }
+    }
+    
+    return firstNumber * secondNumber;
+}
+int getneighbornumber(char **puzzle, int x, int y){
+    int number = 0;
+    char *line = *(puzzle + y);
+    char *n_ptr = line+x; // number pointer
+
+    while(isdigit(*n_ptr)){// go to the begining of the number.
+        n_ptr--;
+    }
+    n_ptr++; // now set the pointer to the first digit of the number
+    while(isdigit(*n_ptr)){
+        number = 10 * number + *n_ptr++ - '0';
+    }
+    return number;
 }
