@@ -13,6 +13,7 @@ struct tablemember {
 };
 
 struct tablemember *hashtable[TABLESIZE];
+
 // struct tablemember *hashtable = (struct tablemember *)malloc(TABLESIZE * sizeof(struct tablemember))
 
 char getfilechar(FILE *fp);
@@ -26,6 +27,9 @@ void refreshTable();
 void freemembers(struct tablemember *member);
 
 int main(){
+    for(int i = 0; i< TABLESIZE; i++){
+    hashtable[i] = NULL;
+    }
 
     struct flag {
         unsigned int is_winning_number : 1;
@@ -43,14 +47,14 @@ int main(){
     FILE *fp = fopen("key.txt", "r");
     int c;
     int cardIndex , winnerCount = -1; // winner count is set to -1 because we use 2^winnerCount.
-    long int totalScore = 0, currentScore;
+    long int totalScore = 0, power;
     while((c = getfileword(MAXWORD, word, fp)) != EOF){
 
         if(strcmp(word, "Card") == 0){
             if(winnerCount >=0){
-                currentScore = pow(2, winnerCount);
-                printf("card %d has %d winners so %ld points\n", cardIndex, winnerCount, currentScore);
-                totalScore += currentScore;
+                power = pow(2, winnerCount);
+                printf("card %d has %d winners so %d points\n", cardIndex, winnerCount+1, power);
+                totalScore += power;
             }
             winnerCount = -1;
             flags.is_own_number = 0;
@@ -72,7 +76,7 @@ int main(){
    
             if(lookup(word)){
                 winnerCount++;
-                printf("%d is a winning number in card %d\n", atoi(word), cardIndex);
+                printf("%d-", atoi(word));
             }
         }
     }
