@@ -218,7 +218,7 @@ int getgerratio(char **puzzle, int x, int y, int rows, int cols){
 
     for(j=0; j < i; j++){
         struct numbercoordinates *number = coordinatesarry[j];
-        if(hash1 == -1){
+        if(hash1 == -1){// if we don't  have a first number
             hash1 = number->hash;
             firstNumber = number->value;
         }else if(number->hash != hash1 && hash2 == -1){// if it's a new number other than the first one
@@ -226,9 +226,11 @@ int getgerratio(char **puzzle, int x, int y, int rows, int cols){
             secondNumber = number->value;
         }else if(hash2 != -1 && number->hash != hash2){// if second number is present and a new number is received
             secondNumber = 0;
+            break;
         }
     }
-
+    //Gear Ratio: 81939900
+    //Answer: 537832
     return firstNumber * secondNumber;
     // free the memory.
 }
