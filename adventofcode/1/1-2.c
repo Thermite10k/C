@@ -141,7 +141,7 @@ void getDigits(int *fd, int *sd, struct trieNode *root, char *line){
                     }else{
                         *sd = curr->value;
                     }
-            
+                    testStr = charpt-1;
                     break;
                 }
                 charpt++;

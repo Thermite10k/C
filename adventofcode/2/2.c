@@ -57,6 +57,7 @@ int main(void){
  
     printf("%d\n", answer);
     printf("%d\n", *powerset);
+    free((void *)powerset);
 
     return 0;
 }
