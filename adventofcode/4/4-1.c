@@ -19,7 +19,7 @@ int main(void){
     int index = 0;
     int winnerarray[MAXNUMBERS];
     int mycards[MAXCARDS];
-    initializearray(mycards, MAXCARDS, 0);
+    initializearray(mycards, MAXCARDS, 1); // we have at least one instance of a card.
     initializearray(winnerarray, MAXNUMBERS ,0);
     FILE *fp = fopen("key.txt", "r");
     struct flag {
@@ -47,19 +47,15 @@ int main(void){
             flags.is_winning_number = 1;
             flags.is_own_number = 0;
         }else if((c == EOF || c == '\n') ){
-            if((index == 0 || mycards[index] > 0)){
-                printf("processing card %d\n", cardIndex);
+                //printf("processing card %d\n", cardIndex);
                 //score = pow(2, winnerCount -1);
                 //totalScore += score;
                 //printf("Card %d has %d winnwes so %d points.\n", cardIndex, winnerCount, score);
                 //printf("\t for %d instances of card have %d matching numbers, so you win")
-                addwinners(mycards, index+1, winnerCount, mycards[index] + 1);
+                addwinners(mycards, index+1, winnerCount, mycards[index]); // the last parameter is how many instances of a card we have. 
                 //printf("We have %d of card %d\n", mycards[index] + 1, index+1);
-                totalScore +=mycards[index++] + 1; // we add the once because we have one original copy
-                
-            }else{
-                totalScore++;
-            }
+                totalScore +=mycards[index++];
+            
             
         }else if(flags.is_winning_number){
             if(c == '|'){
@@ -135,7 +131,7 @@ void addwinners(int *arr, int from ,int count, int mult){
     int i = from;
     //printf("For card %d\n", from);
     for(i; i <= (from + count - 1); i++){// so if  card 2 (index = 1) and 3 winnders, we want 3-4-5 or index 2, 3, 4
-        printf("\tadding %d to card %d\n", mult, i+1);
+        //printf("\tadding %d to card %d\n", mult, i+1);
         arr[i] += mult;
     }
 
