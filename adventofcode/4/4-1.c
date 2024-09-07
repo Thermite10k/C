@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 
 #define MAXWORD 100
 #define CHARBUFFERSIZE 100
@@ -16,6 +17,9 @@ void ungetfilechar(char c);
 int getfileword(int limit, char *word, FILE *fp);
 
 int main(void){
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
     int index = 0;
     int winnerarray[MAXNUMBERS];
     int mycards[MAXCARDS];
@@ -72,6 +76,9 @@ int main(void){
         }
     }
     printf("Total score: %d\n", totalScore);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Time spent (in ms): %4.6f", cpu_time_used * 1000);
     return 0;
 }
 
