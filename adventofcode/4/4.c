@@ -51,19 +51,19 @@ int main(){
     while((c = getfileword(MAXWORD, word, fp)) != EOF){
 
         if(strcmp(word, "Card") == 0){
-            winnerCount = -1;
+            winnerCount = 0;
             flags.is_own_number = 0;
             flags.is_winning_number = 1;
             getfileword(MAXWORD, word, fp); // go to index
             cardIndex = atoi(word);
             getfileword(MAXWORD, word, fp); // skip the ':'
             refreshTable(); // we only care about the current winning numbers.
-        }else if(c == '\n' || c == EOF){
-            if(winnerCount >=0){
-                power = pow(2, winnerCount);
-                printf("card %d has %d winners so %d points\n", cardIndex, winnerCount+1, power);
-                totalScore += power;
-            }
+        }else if((c == '\n' || c == EOF) && winnerCount > 0){
+            
+            power = pow(2, winnerCount - 1);
+            //printf("card %d has %d winners so %d points\n", cardIndex, winnerCount+1, power);
+            totalScore += power;
+        
         }else if(flags.is_winning_number){
             if(c == '|'){
                 flags.is_winning_number = 0;
@@ -77,7 +77,7 @@ int main(){
    
             if(lookup(word)){
                 winnerCount++;
-                printf("%d-", atoi(word));
+                //printf("%d-", atoi(word));
             }
         }
     }
