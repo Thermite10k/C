@@ -52,9 +52,10 @@ int main(void){
                 //totalScore += score;
                 //printf("Card %d has %d winnwes so %d points.\n", cardIndex, winnerCount, score);
                 //printf("\t for %d instances of card have %d matching numbers, so you win")
-                addwinners(mycards, index+1, winnerCount, mycards[index]); // the last parameter is how many instances of a card we have. 
+                addwinners(mycards, index+1, winnerCount, mycards[index]); // the last parameter is how many instances of a card we have. the second parameter is
+                                                                           // index+1 to represent the card number
                 //printf("We have %d of card %d\n", mycards[index] + 1, index+1);
-                totalScore +=mycards[index++];
+                totalScore +=mycards[index++]; // once we go over a card, we add howmany instances we have to our totalscore
             
             
         }else if(flags.is_winning_number){
@@ -127,11 +128,11 @@ void initializearray(int *arr, int size, int setto){
     }
 }
 void addwinners(int *arr, int from ,int count, int mult){
-
+    // count is how many winners the card 'from' had. mult is how many instances of the card 'from' we have
     int i = from;
-    //printf("For card %d\n", from);
+   
     for(i; i <= (from + count - 1); i++){// so if  card 2 (index = 1) and 3 winnders, we want 3-4-5 or index 2, 3, 4
-        //printf("\tadding %d to card %d\n", mult, i+1);
+       
         arr[i] += mult;
     }
 
