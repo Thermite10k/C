@@ -131,15 +131,15 @@ int getfileword(int limit, char *word, FILE *fp){
     return word[0];
 }
 unsigned hash(char *word){
-    int value = atoi(word);
-    unsigned hashval = 0;
-    int v1 = 3; // just a random numbers.
+    unsigned value = atoi(word);
+    // unsigned hashval = 0;
+    // int v1 = 3; // just a random numbers.
 
-    for(value; value > 0; value /= 10){
-        hashval += (value % 10) * v1++;
-    }
+    // for(value; value > 0; value /= 10){
+    //     hashval += (value % 10) * v1++;
+    // }
     
-    return hashval % TABLESIZE;
+    return value % TABLESIZE;
 }
 struct tablemember *lookup(char *word){
     unsigned hashval = hash(word);
