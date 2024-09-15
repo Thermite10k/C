@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 #define CHARBUFFSIZE 100
 #define KEYFILE "key.txt"
@@ -18,12 +19,34 @@ int main(int argc, char *argv[]){
     char *lineptr;
     char word[MAXLINE];
     int seeds[MAXSEEDS];
+    int seedindex = 0;
+    char *newmap = "%[^-]-to-%[^ ] map:";
+    char *from[MAXLINE], *to[MAXLINE];
+
+    /* First line contains the seeds */
+    getfileline(fp, MAXLINE, line); // storing the seeds in line
+    lineptr = line;
+    while(getlineword(&lineptr, word, MAXLINE) != '\0'){
+        if(seedindex < MAXSEEDS && isdigit(*word)){
+            seeds[seedindex++] = atoi(word);
+        }
+    }
+
+    // for(int i = 0; i<seedindex; i++){
+    //     printf("%d ", seeds[i]);
+    // }
+
 
     while(getfileline(fp, MAXLINE, line) != EOF){
         lineptr = line;
-        while((linestatus = getlineword(&lineptr, word, MAXLINE)) != EOF && linestatus !='\0'){
-            printf("%s\n", word);
+        int scanstatus = 0;
+        //printf("%s", line);
+        if((scanstatus = sscanf(line, newmap, from, to)) == 2){
+            printf("%s to %s\n", from, to);
         }
+        // while((linestatus = getlineword(&lineptr, word, MAXLINE)) != EOF && linestatus !='\0'){
+        //     printf("%s\n", word);
+        // }
     }
 
     return 0;
