@@ -187,7 +187,7 @@ int getgerratio(char **puzzle, int x, int y, int rows, int cols){
 
     // 9 pointers to structs, same as: struct numbercoordinates array[9].
     // 9 is how many structs we might have at most as * has 9 neighbors including itself.
-    struct numbercoordinates **coordinatesarry = malloc(9 * sizeof(struct numbercoordinates));
+    struct numbercoordinates **coordinatesarry = calloc(9, sizeof(struct numbercoordinates *));
 
     // coordinatesarry[0] = malloc(sizeof(struct numbercoordinates));
     // coordinatesarry[0]->value = 250;
@@ -231,6 +231,10 @@ int getgerratio(char **puzzle, int x, int y, int rows, int cols){
     }
     //Gear Ratio: 81939900
     //Answer: 537832
+    for(j=0; j<i; j++){
+        free(coordinatesarry[j]);
+    }
+    free(coordinatesarry);
     return firstNumber * secondNumber;
     // free the memory.
 }
