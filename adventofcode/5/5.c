@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
-
+#include <string.h>
 #define CHARBUFFSIZE 100
 #define KEYFILE "key.txt"
-#define MAXLINE 100
+#define MAXLINE 1000
 #define MAXSEEDS 100
 
 char getfilechar(FILE *fp);
@@ -14,7 +14,8 @@ int getlineword(char **line, char *word, int limit);
 long updatesrc(long src, long from, long to, long range);
 
 int main(int argc, char *argv[]){
-    int wordstatus, linestatus;
+    int wordstatus, linestatus, i;
+    long dest = 0;
     FILE *fp = fopen(KEYFILE, "r");
     char line[MAXLINE];
     char *lineptr;
@@ -31,13 +32,12 @@ int main(int argc, char *argv[]){
     lineptr = line;
     while(getlineword(&lineptr, word, MAXLINE) != '\0'){
         if(srcindex < MAXSEEDS && isdigit(*word)){
-            src[srcindex++] = atoi(word);
+            printf("%lld ", (src[srcindex++] = atoi(word)));
+            updatedsrc[i] = 0;
         }
     }
+    printf("\n");
 
-    for(int i = 0; i<srcindex; i++){
-        printf("%d ", src[i]);
-    }
 
 
     while((linestatus = getfileline(fp, MAXLINE, line)) != EOF){
@@ -45,21 +45,39 @@ int main(int argc, char *argv[]){
         int scanstatus = 0;
         //printf("%s", line);
         if((scanstatus = sscanf(line, newmap, from, to)) == 2){
-            printf("%s to %s\n", from, to);
+            //printf("%s to %s\n", from, to);
         }else if ((scanstatus = sscanf(line, map, &rangeto, &rangefrom, &range)) == 3){
-            printf("Going from %d to %d with range: %d\n", rangefrom, rangeto, range);
+            //printf("Going from %d to %d with range: %d\n", rangefrom, rangeto, range);
             // while((wordstatus = getlineword(&lineptr, word, MAXLINE)) != EOF && wordstatus !='\0'){         
             // }
+            for(i=0; (i < srcindex); i++){
+                if(src[i]){ // if src has not been updated, (we set it to zero if it's updated)
+                    dest = updatesrc(src[i], rangefrom, rangeto, range);
+                    if(dest){ // if it has a value within range
+                        //printf("%d goes to %d\n", src[i], dest);
+                        updatedsrc[i] = dest;
+                        src[i] = 0; // if we have an updated value, do not check src[i] again.
+                    }
+
+                }
+            }
             
         }
         if(linestatus == '\n'){
-            printf("END OF MAP\n");
-
+            for(i=0; i < srcindex; i++){
+                if(!src[i]){
+                    src[i] = updatedsrc[i];
+                    updatedsrc[i] = 0;
+                }
+            }
         }
     }
-    // src from to range
 
-    printf("\n%d", updatesrc(79, 50, 52, 48));
+
+    for(i = 0; i<srcindex; i++){
+        printf("%d ", src[i]);
+    }
+    
 
     return 0;
 }
@@ -124,11 +142,11 @@ int getlineword(char **line, char *word, int limit){
     return word[0];
 }
 long updatesrc(long src, long from, long to, long range){
-    long step = to - from;
+    long long step = to - from;
 
-    if(src >= from && src <= from + range){
+    if(src >= from && src < from + range){
         return (src + step);
     }else{
-        return src;
+        return 0;
     }
 }
