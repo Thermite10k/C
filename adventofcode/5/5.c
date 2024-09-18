@@ -64,6 +64,9 @@ int main(int argc, char *argv[]){
             }
             
         }
+        /*
+            Now we check the updatedsrc and src, if src has not been mapped to a new one, we keep it, and replace the updated ones with new values.
+        */
         if(linestatus == '\n'){
             for(i=0; i < srcindex; i++){
                 if(!src[i]){
@@ -73,7 +76,9 @@ int main(int argc, char *argv[]){
             }
         }
     }
-
+    /* 
+        Findinding the final answer.
+     */
     long long min = src[0];
     for(i = 0; i<srcindex; i++){
         min = src[i] < min ? src[i] : min;
@@ -144,7 +149,10 @@ int getlineword(char **line, char *word, int limit){
     *w = '\0';
     return word[0];
 }
- long long updatesrc( long long src,  long long from,  long long to,  long long range){
+/*
+    Check whether or not an src is in range.
+*/
+long long updatesrc( long long src,  long long from,  long long to,  long long range){
     long long step = to - from;
 
     if(src >= from && src < (from + range)){
