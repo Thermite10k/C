@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define CHARBUFFSIZE 100
-#define KEYFILE "key.txt"
+#define KEYFILE "key2.txt"
 #define MAXLINE 1000
 #define MAXSEEDS 100
 
@@ -15,28 +15,46 @@ int getlineword(char **line, char *word, int limit);
  long long updatesrc( long long src,   long long from,   long long to,   long long range);
 
 int main(int argc, char *argv[]){
-    int wordstatus, linestatus, i;
+    int wordstatus, linestatus, i = 0;
      long long dest = 0;
     FILE *fp = fopen(KEYFILE, "r");
     char line[MAXLINE];
     char *lineptr;
     char word[MAXLINE];
-     long long src[MAXSEEDS];
-     long long updatedsrc[MAXSEEDS];
-    int srcindex = 0;
+    long long src[MAXSEEDS];
+    long long ranges[MAXSEEDS];
+    long long *srcInrange;
+    long long updatedsrc[MAXSEEDS];
+    long long *updatedsrcInrange;
+    long long sumranges = 0;
+  
+    int seedindex = 0; // keeps track of how many seeds we have, excluding ranges.
     char *newmap = "%[^-]-to-%[^ ] map:";
     char *map = "%lld%lld%lld";
     char *from[MAXLINE], *to[MAXLINE];
     long long int rangeto, rangefrom, range;
-    /* First line contains the seeds */
+    /*  First line contains the seeds
+        We read it and store the renge and the begining of each range.
+     */
     getfileline(fp, MAXLINE, line); // storing the seeds in line
     lineptr = line;
+
     while(getlineword(&lineptr, word, MAXLINE) != '\0'){
-        if(srcindex < MAXSEEDS && isdigit(*word)){
-            printf("%lld ", (src[srcindex++] = myatoi(word)));
-            updatedsrc[i] = 0;
+
+        if(seedindex < MAXSEEDS && isdigit(*word)){
+            printf("%lld\n", (src[seedindex] = myatoi(word)));
+            if(seedindex && seedindex%2){ // if odd, is range
+                sumranges += src[seedindex];
+            }
+            seedindex++;
+
+            //updatedsrc[i] = 0;
         }
     }
+
+    srcInrange = (long long *)calloc((sumranges), sizeof(long long)); // enough space for 'ranges' long long
+
+    printf("We have %d seeds and %d ranges", sumranges, seedindex /2 );
     printf("\n");
 
 
@@ -51,7 +69,7 @@ int main(int argc, char *argv[]){
             printf("Going from %lld to %lld with range: %lld\n", rangefrom, rangeto, range);
             // while((wordstatus = getlineword(&lineptr, word, MAXLINE)) != EOF && wordstatus !='\0'){         
             // }
-            for(i=0; (i < srcindex); i++){
+            for(i=0; (i < seedindex); i++){
                 if(src[i]){ // if src has not been updated, (we set it to zero if it's updated)
                     dest = updatesrc(src[i], rangefrom, rangeto, range);
                     if(dest){ // if it has a value within range
@@ -68,7 +86,7 @@ int main(int argc, char *argv[]){
             Now we check the updatedsrc and src, if src has not been mapped to a new one, we keep it, and replace the updated ones with new values.
         */
         if(linestatus == '\n'){
-            for(i=0; i < srcindex; i++){
+            for(i=0; i < seedindex; i++){
                 if(!src[i]){
                     src[i] = updatedsrc[i];
                     updatedsrc[i] = 0;
@@ -80,7 +98,7 @@ int main(int argc, char *argv[]){
         Findinding the final answer.
      */
     long long min = src[0];
-    for(i = 0; i<srcindex; i++){
+    for(i = 0; i<seedindex; i++){
         min = src[i] < min ? src[i] : min;
     }
 
