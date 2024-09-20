@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define CHARBUFFSIZE 100
-#define KEYFILE "key2.txt"
+#define KEYFILE "key.txt"
 #define MAXLINE 1000
 #define MAXSEEDS 100
 
@@ -11,9 +11,9 @@ char getfilechar(FILE *fp);
 void ungetfilechar(char c);
 int getfileline(FILE *fp, int limit, char *line);
 int getlineword(char **line, char *word, int limit);
- long long myatoi(char *word);
- long long updatesrc( long long src,   long long from,   long long to,   long long range);
-
+long long myatoi(char *word);
+long long updatesrc( long long src,   long long from,   long long to,   long long range);
+void addSeedsToDynamicArray(long long *seedarray, long long *src,int seedindex);
 int main(int argc, char *argv[]){
     int wordstatus, linestatus, i = 0;
      long long dest = 0;
@@ -23,18 +23,19 @@ int main(int argc, char *argv[]){
     char word[MAXLINE];
     long long src[MAXSEEDS];
     long long ranges[MAXSEEDS];
-    long long *srcInrange;
+    long long *srcInrange; // A dynamic array to hold all the seeds.
     long long updatedsrc[MAXSEEDS];
-    long long *updatedsrcInrange;
-    long long sumranges = 0;
+    long long *updatedsrcInrange; // A dynamic array to hold the mapped seeds
+    long long sumranges = 0; // adds all of the ranges, to determine the size of dynamic arrays
   
     int seedindex = 0; // keeps track of how many seeds we have, excluding ranges.
     char *newmap = "%[^-]-to-%[^ ] map:";
     char *map = "%lld%lld%lld";
     char *from[MAXLINE], *to[MAXLINE];
     long long int rangeto, rangefrom, range;
-    /*  First line contains the seeds
-        We read it and store the renge and the begining of each range.
+    /* 
+        First line contains the seeds
+        We read it and store the seeds and their range. 
      */
     getfileline(fp, MAXLINE, line); // storing the seeds in line
     lineptr = line;
@@ -42,7 +43,8 @@ int main(int argc, char *argv[]){
     while(getlineword(&lineptr, word, MAXLINE) != '\0'){
 
         if(seedindex < MAXSEEDS && isdigit(*word)){
-            printf("%lld\n", (src[seedindex] = myatoi(word)));
+            src[seedindex] = myatoi(word);
+            printf("%lld\n", (src[seedindex]));
             if(seedindex && seedindex%2){ // if odd, is range
                 sumranges += src[seedindex];
             }
@@ -53,10 +55,29 @@ int main(int argc, char *argv[]){
     }
 
     srcInrange = (long long *)calloc((sumranges), sizeof(long long)); // enough space for 'ranges' long long
-
-    printf("We have %d seeds and %d ranges", sumranges, seedindex /2 );
+    updatedsrcInrange = (long long *)calloc((sumranges), sizeof(long long)); 
+    printf("We have %lld seeds and %lld ranges", sumranges, seedindex /2 ); // we divide seedindex by two because half of the values are ranges.
+    addSeedsToDynamicArray(srcInrange, src, seedindex);
+    for(int allseeds = 0; allseeds < sumranges; allseeds++){
+        printf("%lld ", srcInrange[allseeds]);
+    }
     printf("\n");
 
+    /*
+    
+    To ge the answer for part two:
+
+    > src becomes srInrange
+    > updatedsrd becomes updaredsrcInrange
+    > seedindex becomes sumranges
+    
+    so if you comment out the below defines, you get the answer for part 1
+
+    */
+
+    #define src srcInrange
+    #define updatedsrc updatedsrcInrange
+    #define seedindex sumranges
 
 
     while((linestatus = getfileline(fp, MAXLINE, line)) != EOF){
@@ -187,4 +208,26 @@ long long updatesrc( long long src,  long long from,  long long to,  long long r
     }
 
     return number;
+}
+void addSeedsToDynamicArray(long long *seedarray, long long *src,int seedindex){
+    int i = 0, j=0; // i is for the src array, j is for the seedarray which holds all of the seed.
+    long long d_j = 0; // cointains how much J must go up based on range.
+    long long rangelimit = 0; // largest seed value of a given range.
+    long long seed = 0, range = 0;
+    printf("\ngoing through %d sources\n", seedindex);
+    for(i = 0; i < seedindex ; i++){
+        if(i && (i % 2)){ // if it's odd, then it's a range
+            range = src[i];
+            seed = seedarray[j-1];
+            rangelimit = range + seed;
+            d_j = j + range -1; // subtracting one because array is base 0;
+            
+            for(j; j<d_j; j++){
+                seedarray[j] = seedarray[j-1] +1;
+            }
+            
+        }else{
+            seedarray[j++] = src[i];
+        }
+    }
 }
