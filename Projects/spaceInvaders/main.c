@@ -31,10 +31,13 @@ enum env{
 void display(char (*array)[COLS], int rows, int cols);
 
 // initializes the array to either ' ' or whatever char is given as the second arg
-void initializeCharPointerArray(char (*array)[COLS], int rows, int cols, ...);
+void initialize_char_pointer_array(char (*array)[COLS], int rows, int cols, ...);
 
 // setsup the frontBuffer to start the game
-void setupFrontBuffer(char (*array)[COLS], int rows, int cols);
+void setup_front_buffer(char (*array)[COLS], int rows, int cols);
+
+// reads the fron buffer and puts the new instance in backbuffer
+void update_game_state(char (*arrayBack)[COLS], char (*arrayFront)[COLS], int rows, int cols);
 
 
 int main(){
@@ -42,9 +45,13 @@ int main(){
     // we use a two buffer approach
     char frontBuffer[ROWS][COLS];
     char backBuffer[ROWS][COLS];
-    initializeCharPointerArray(frontBuffer, ROWS, COLS);
-    initializeCharPointerArray(backBuffer, ROWS, COLS);
-    setupFrontBuffer(frontBuffer, ROWS, COLS);
+    
+    int Vy = 1; // Velocity in the y direction, will either be -1 or 1 and changes once an enemy hits the wall.
+
+
+    initialize_char_pointer_array(frontBuffer, ROWS, COLS);
+    initialize_char_pointer_array(backBuffer, ROWS, COLS);
+    setup_front_buffer(frontBuffer, ROWS, COLS);
     display(frontBuffer, ROWS, COLS);
 
     return 0;
@@ -58,7 +65,7 @@ void display(char (*array)[COLS], int rows, int cols){
         putchar('\n');
     }
 }
-void initializeCharPointerArray(char (*array)[COLS], int rows, int cols, ...){
+void initialize_char_pointer_array(char (*array)[COLS], int rows, int cols, ...){
 
     va_list ap;
     char initializeTo;
@@ -76,7 +83,7 @@ void initializeCharPointerArray(char (*array)[COLS], int rows, int cols, ...){
     va_end(ap);
 
 }
-void setupFrontBuffer(char (*array)[COLS], int rows, int cols){    
+void setup_front_buffer(char (*array)[COLS], int rows, int cols){    
 
     int y = 0, x = 0;
 
