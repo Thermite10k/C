@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 #define ROWS 15
 #define COLS 40
@@ -8,7 +9,7 @@
     ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
     DEFINE
     a_function()
-    myVariable
+    myVariable - exception for two char vars such as dx, Vy, etc
     ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 */
 /*
@@ -39,6 +40,9 @@ void setup_front_buffer(char (*array)[COLS], int rows, int cols);
 // reads the fron buffer and puts the new instance in backbuffer
 void update_game_state(char (*arrayBack)[COLS], char (*arrayFront)[COLS], int rows, int cols);
 
+// returns 1 if it's hitting a wall, returns 2 if it's hitting the bottom
+// if y == 1 || y == rows  OR x == 1 || cols, we have a collision
+int check_for_collision(int y, int x, int rows, int cols);
 
 int main(){
 
@@ -46,13 +50,19 @@ int main(){
     char frontBuffer[ROWS][COLS];
     char backBuffer[ROWS][COLS];
     
-    int Vy = 1; // Velocity in the y direction, will either be -1 or 1 and changes once an enemy hits the wall.
+    
 
 
     initialize_char_pointer_array(frontBuffer, ROWS, COLS);
     initialize_char_pointer_array(backBuffer, ROWS, COLS);
     setup_front_buffer(frontBuffer, ROWS, COLS);
-    display(frontBuffer, ROWS, COLS);
+
+    while(1){
+        printf("\033[%dA\033[%dD", ROWS, COLS);
+        display(frontBuffer, ROWS, COLS);
+        update_game_state(backBuffer, frontBuffer, ROWS, COLS);
+        memcpy(frontBuffer, backBuffer, sizeof(backBuffer));
+    }
 
     return 0;
 }
@@ -113,4 +123,54 @@ void setup_front_buffer(char (*array)[COLS], int rows, int cols){
                                          array[5][secondThird + 2] = ENEMY_1;     array[5][secondThird - 2] = ENEMY_1;                                     
 
     array[rows-2][middle] = PLAYER_SHIP;
+}
+
+void update_game_state(char (*backBuffer)[COLS], char (*frontBuffer)[COLS], int rows, int cols){
+
+    enum collisions {WALL = 1, TOP_BOTTOM = 2};
+    static int Vx = 1;
+    char currentSelection;
+    int x = 0, y = 0;
+    rows = rows;
+    cols = cols;
+    /*
+        Starting at y=1 and x=1 to avaoid walls
+    */
+    for(y = 0; y < rows; y++){
+        for(x = 0; x < cols; x++){
+            currentSelection = frontBuffer[y][x];
+         
+            switch(currentSelection){
+                case ENEMY_2:
+                //printf("CS : %c ", currentSelection);
+                    if(check_for_collision(y, x, rows, cols - 1) == WALL){
+                        Vx *= -1;
+                    }
+                    backBuffer[y][x+Vx] = currentSelection;
+                   
+                    break;
+
+                case ENEMY_1:
+                    if(check_for_collision(y, x, rows, cols - 1) == WALL){
+                        Vx *= -1;
+                    }
+                    backBuffer[y][x+Vx] = currentSelection;
+                    break;
+
+                default:
+                    backBuffer[y][x] = currentSelection;
+            }
+        }
+    }
+    
+
+}
+int check_for_collision(int y, int x, int rows, int cols){
+    if(y == 1 || y == rows){
+        return(2);
+    }
+    if(x == 1 || x == cols){
+        return(1);
+    }
+    return(0);
 }
