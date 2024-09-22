@@ -19,7 +19,7 @@ void cleararray(char (*arr)[]);
 void initialize(char (*arr)[]);
 void display(char (*arr)[]);
 int getneighbor(char (*arr)[], int x, int y);
-void eval(char (*front)[], char (*back)[]); // we read back and update front
+void eval(char (*front)[], char (*back)[]); 
 void swaparrays(char (*arr1)[], char (*arr2)[] );
 
 int main(int argc, char *argv[]){
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]){
     while(1){
         //system("cls") ;   
         display(front);
-        eval(back, front);
+        eval(front, back);
         printf("\033[%dA\033[%dD",ROW, COL);
         /*
             \033 : ASCII code 27, start signals the start of a scape sequence
@@ -138,14 +138,14 @@ void eval(char front[ROW][COL], char back[ROW][COL]){
     int x,y;
     for(y=0; y<ROW; y++){
         for(x=0; x<COL; x++){
-            neighbors = getneighbor(back,x,y);
-            front[y][x] = 0;
-            if(back[y][x]){
+            neighbors = getneighbor(front,x,y);
+            back[y][x] = 0;
+            if(front[y][x]){
                 if(neighbors == 2 || neighbors == 3 ){
-                    front[y][x] = 1;
+                    back[y][x] = 1;
                 }
             }else if (neighbors == 3){
-                front[y][x] = 1;
+                back[y][x] = 1;
             }
                 
             
