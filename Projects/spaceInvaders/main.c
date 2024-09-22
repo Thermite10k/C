@@ -131,20 +131,18 @@ void update_game_state(char (*backBuffer)[COLS], char (*frontBuffer)[COLS], int 
     static int Vx = 1;
     char currentSelection;
     int x = 0, y = 0;
-    rows = rows;
-    cols = cols;
+    //initialize_char_pointer_array(backBuffer, ROWS, COLS, '#');
     /*
-        Starting at y=1 and x=1 to avaoid walls
+        read front -> update back.
     */
     for(y = 0; y < rows; y++){
         for(x = 0; x < cols; x++){
             currentSelection = frontBuffer[y][x];
-         
             switch(currentSelection){
                 case ENEMY_2:
                 //printf("CS : %c ", currentSelection);
                     if(check_for_collision(y, x, rows, cols - 1) == WALL){
-                        Vx *= -1;
+                        Vx = -1 * Vx;
                     }
                     backBuffer[y][x+Vx] = currentSelection;
                    
@@ -159,12 +157,17 @@ void update_game_state(char (*backBuffer)[COLS], char (*frontBuffer)[COLS], int 
 
                 default:
                     backBuffer[y][x] = currentSelection;
+                    break;
             }
         }
     }
     
 
 }
+/*
+    Note: this function fails if it's hitting a corner, use conditions to fix it
+          if corners become a thing, for now, this will work.
+*/
 int check_for_collision(int y, int x, int rows, int cols){
     if(y == 1 || y == rows){
         return(2);
