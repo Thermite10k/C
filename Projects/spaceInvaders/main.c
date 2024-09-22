@@ -72,6 +72,9 @@ void initializeCharPointerArray(char (*array)[COLS], int rows, int cols, ...){
             array[y][x] = initializeTo;
         }
     }
+
+    va_end(ap);
+
 }
 void setupFrontBuffer(char (*array)[COLS], int rows, int cols){    
 
