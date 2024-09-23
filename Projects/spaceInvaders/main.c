@@ -40,10 +40,11 @@ void setup_front_buffer(char (*array)[COLS], int rows, int cols);
 // reads the fron buffer and puts the new instance in backbuffer
 void update_game_state(char (*arrayBack)[COLS], char (*arrayFront)[COLS], int rows, int cols);
 
+void swaparrays(char (*arrayTo)[COLS], char (*arrayFrom)[COLS], int rows, int cols);
+
 // returns 1 if it's hitting a wall, returns 2 if it's hitting the bottom
 // if y == 1 || y == rows  OR x == 1 || cols, we have a collision
 int check_for_collision(int y, int x, int rows, int cols);
-
 int main(){
 
     // we use a two buffer approach
@@ -56,12 +57,15 @@ int main(){
     initialize_char_pointer_array(frontBuffer, ROWS, COLS);
     initialize_char_pointer_array(backBuffer, ROWS, COLS);
     setup_front_buffer(frontBuffer, ROWS, COLS);
+    display(frontBuffer, ROWS, COLS);
+    int frames = 40;
 
     while(1){
-        printf("\033[%dA\033[%dD", ROWS, COLS);
         display(frontBuffer, ROWS, COLS);
         update_game_state(backBuffer, frontBuffer, ROWS, COLS);
-        memcpy(frontBuffer, backBuffer, sizeof(backBuffer));
+        printf("\033[%dA\033[%dD", ROWS, COLS);
+        swaparrays(frontBuffer, backBuffer, ROWS, COLS);
+//        memcpy(frontBuffer, backBuffer, sizeof(backBuffer));
     }
 
     return 0;
@@ -109,18 +113,19 @@ void setup_front_buffer(char (*array)[COLS], int rows, int cols){
     int middle = cols / 2;
     int firstThird = middle / 2;
     int secondThird = firstThird + middle;
+    array[2][2] = ENEMY_2;
 
-    array[3][middle] = ENEMY_2;          array[3][middle + 1] = ENEMY_2;          array[3][middle - 1] = ENEMY_2;
-    array[4][middle] = ENEMY_1;          array[4][middle + 1] = ENEMY_1;          array[4][middle - 1] = ENEMY_1;
-                                         array[4][middle + 2] = ENEMY_1;          array[4][middle - 2] = ENEMY_1;
+    // array[3][middle] = ENEMY_2;          array[3][middle + 1] = ENEMY_2;          array[3][middle - 1] = ENEMY_2;
+    // array[4][middle] = ENEMY_1;          array[4][middle + 1] = ENEMY_1;          array[4][middle - 1] = ENEMY_1;
+    //                                      array[4][middle + 2] = ENEMY_1;          array[4][middle - 2] = ENEMY_1;
     
-    array[4][firstThird] = ENEMY_2;      array[4][firstThird + 1] = ENEMY_2;      array[4][firstThird - 1] = ENEMY_2;
-    array[5][firstThird] = ENEMY_1;      array[5][firstThird + 1] = ENEMY_1;      array[5][firstThird - 1] = ENEMY_1;
-                                         array[5][firstThird + 2] = ENEMY_1;      array[5][firstThird - 2] = ENEMY_1;
+    // array[4][firstThird] = ENEMY_2;      array[4][firstThird + 1] = ENEMY_2;      array[4][firstThird - 1] = ENEMY_2;
+    // array[5][firstThird] = ENEMY_1;      array[5][firstThird + 1] = ENEMY_1;      array[5][firstThird - 1] = ENEMY_1;
+    //                                      array[5][firstThird + 2] = ENEMY_1;      array[5][firstThird - 2] = ENEMY_1;
 
-    array[4][secondThird] = ENEMY_2;     array[4][secondThird + 1] = ENEMY_2;     array[4][secondThird - 1] = ENEMY_2;
-    array[5][secondThird] = ENEMY_1;     array[5][secondThird + 1] = ENEMY_1;     array[5][secondThird - 1] = ENEMY_1;
-                                         array[5][secondThird + 2] = ENEMY_1;     array[5][secondThird - 2] = ENEMY_1;                                     
+    // array[4][secondThird] = ENEMY_2;     array[4][secondThird + 1] = ENEMY_2;     array[4][secondThird - 1] = ENEMY_2;
+    // array[5][secondThird] = ENEMY_1;     array[5][secondThird + 1] = ENEMY_1;     array[5][secondThird - 1] = ENEMY_1;
+    //                                      array[5][secondThird + 2] = ENEMY_1;     array[5][secondThird - 2] = ENEMY_1;                                     
 
     array[rows-2][middle] = PLAYER_SHIP;
 }
@@ -129,40 +134,36 @@ void update_game_state(char (*backBuffer)[COLS], char (*frontBuffer)[COLS], int 
 
     enum collisions {WALL = 1, TOP_BOTTOM = 2};
     static int Vx = 1;
-    char currentSelection;
+    int currentSelection;
     int x = 0, y = 0;
-    //initialize_char_pointer_array(backBuffer, ROWS, COLS, '#');
+    initialize_char_pointer_array(backBuffer, ROWS, COLS, ' ');
+    
     /*
         read front -> update back.
     */
     for(y = 0; y < rows; y++){
         for(x = 0; x < cols; x++){
             currentSelection = frontBuffer[y][x];
-            switch(currentSelection){
-                case ENEMY_2:
-                //printf("CS : %c ", currentSelection);
-                    if(check_for_collision(y, x, rows, cols - 1) == WALL){
+            if(currentSelection == ENEMY_2 || currentSelection == ENEMY_1){
+
+                    backBuffer[y][x + Vx] = currentSelection;
+
+                    if(x + Vx == 1 || x + Vx == cols -2){
                         Vx = -1 * Vx;
                     }
-                    backBuffer[y][x+Vx] = currentSelection;
-                   
-                    break;
+                
+                    //backBuffer[y][x] = ' ';
+                
 
-                case ENEMY_1:
-                    if(check_for_collision(y, x, rows, cols - 1) == WALL){
-                        Vx *= -1;
-                    }
-                    backBuffer[y][x+Vx] = currentSelection;
-                    break;
-
-                default:
+                
+            }else{
+                if(backBuffer[y][x] == ' '){
                     backBuffer[y][x] = currentSelection;
-                    break;
+                }
             }
         }
     }
-    
-
+ 
 }
 /*
     Note: this function fails if it's hitting a corner, use conditions to fix it
@@ -176,4 +177,13 @@ int check_for_collision(int y, int x, int rows, int cols){
         return(1);
     }
     return(0);
+}
+void swaparrays(char (*arrayTo)[COLS],char (*arrayFrom)[COLS], int rows, int cols){
+    int x = 0, y = 0;
+
+    for(y = 0; y < rows; y++){
+        for(x = 0; x < cols; x++){
+            arrayTo[y][x] = arrayFrom[y][x];
+        }
+    }
 }
