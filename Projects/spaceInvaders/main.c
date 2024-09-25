@@ -45,11 +45,14 @@ void swaparrays(char (*arrayTo)[COLS], char (*arrayFrom)[COLS], int rows, int co
 // returns 1 if it's hitting a wall, returns 2 if it's hitting the bottom
 // if y == 1 || y == rows  OR x == 1 || cols, we have a collision
 int check_for_collision(int y, int x, int rows, int cols);
+
+
 int main(){
 
     // we use a two buffer approach
-    char frontBuffer[ROWS][COLS];
-    char backBuffer[ROWS][COLS];
+    // the extra column stores the direction, 1 for right, -1 for left.
+    char frontBuffer[ROWS][COLS + 1];
+    char backBuffer[ROWS][COLS + 1];
     
     
 
@@ -92,6 +95,7 @@ void initialize_char_pointer_array(char (*array)[COLS], int rows, int cols, ...)
         for(x = 0; x < cols; x++){
             array[y][x] = initializeTo;
         }
+        array[y][rows] == 1; // this sets the initial direction vector to 1
     }
 
     va_end(ap);
@@ -100,7 +104,7 @@ void initialize_char_pointer_array(char (*array)[COLS], int rows, int cols, ...)
 void setup_front_buffer(char (*array)[COLS], int rows, int cols){    
 
     int y = 0, x = 0;
-
+    // this approach is not the most efficient but it's more flexible, FPS is good enough.
     for(y = 0; y < rows; y++){
         array[y][0] = array[y][cols-1] = ENV_BRICK_FULL;
         if(y == 0 || y == rows-1){
@@ -114,6 +118,7 @@ void setup_front_buffer(char (*array)[COLS], int rows, int cols){
     int firstThird = middle / 2;
     int secondThird = firstThird + middle;
     array[2][2] = ENEMY_2;
+    array[3][4] = ENEMY_2;
 
     // array[3][middle] = ENEMY_2;          array[3][middle + 1] = ENEMY_2;          array[3][middle - 1] = ENEMY_2;
     // array[4][middle] = ENEMY_1;          array[4][middle + 1] = ENEMY_1;          array[4][middle - 1] = ENEMY_1;
@@ -133,7 +138,7 @@ void setup_front_buffer(char (*array)[COLS], int rows, int cols){
 void update_game_state(char (*backBuffer)[COLS], char (*frontBuffer)[COLS], int rows, int cols){
 
     enum collisions {WALL = 1, TOP_BOTTOM = 2};
-    static int Vx = 1;
+    int Vx = 1;
     int currentSelection;
     int x = 0, y = 0;
     initialize_char_pointer_array(backBuffer, ROWS, COLS, ' ');
@@ -142,20 +147,17 @@ void update_game_state(char (*backBuffer)[COLS], char (*frontBuffer)[COLS], int 
         read front -> update back.
     */
     for(y = 0; y < rows; y++){
+        Vx = frontBuffer[y][cols];
+        if(Vx == 1 && frontBuffer[y][cols-2] != ' '){ // x = cols - 2 is the last valid game col
+            Vx = -1;
+        }else if(Vx == -1 && frontBuffer[y][1] != ' '){
+            Vx = 1;
+        }
         for(x = 0; x < cols; x++){
+
             currentSelection = frontBuffer[y][x];
             if(currentSelection == ENEMY_2 || currentSelection == ENEMY_1){
-
                     backBuffer[y][x + Vx] = currentSelection;
-
-                    if(x + Vx == 1 || x + Vx == cols -2){
-                        Vx = -1 * Vx;
-                    }
-                
-                    //backBuffer[y][x] = ' ';
-                
-
-                
             }else{
                 if(backBuffer[y][x] == ' '){
                     backBuffer[y][x] = currentSelection;
@@ -182,7 +184,7 @@ void swaparrays(char (*arrayTo)[COLS],char (*arrayFrom)[COLS], int rows, int col
     int x = 0, y = 0;
 
     for(y = 0; y < rows; y++){
-        for(x = 0; x < cols; x++){
+        for(x = 0; x <= cols; x++){ // x <= cols includes the direction vector too
             arrayTo[y][x] = arrayFrom[y][x];
         }
     }
