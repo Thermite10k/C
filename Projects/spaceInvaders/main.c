@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <windows.h>
+#include <conio.h>
 
 #define ROWS 15
 #define COLS 80
@@ -52,7 +53,11 @@ int main(){
     char frontBuffer[ROWS][TOTAL_COLS];
     char backBuffer[ROWS][TOTAL_COLS];
     
-    
+    enum keys{
+        RIGHT = 'M',
+        LEFT = 'K',
+        FIRE = ' ',
+    };
 
 
     initialize_char_pointer_array(frontBuffer, ROWS, COLS);
@@ -60,14 +65,32 @@ int main(){
     setup_front_buffer(frontBuffer, ROWS, COLS);
     int frames = 10000000;
     int framesindex = 0;
+    int key_event = 0;
 
     while(1){
+        key_event = 0;
+        if(kbhit()){
+            switch((key_event = getch())){
+                case RIGHT:
+                    printf("->\n");
+                    break;
+                case LEFT:
+                    printf("<-\n");
+                    break;
+                case FIRE:
+                    printf("%c\n", PLAYER_BULLET);
+                    break;
+                
+            }
+        }
+        
         display(frontBuffer, ROWS, COLS);
         if(!(framesindex % 100000)){
 
         update_game_state(backBuffer, frontBuffer, ROWS, COLS);
         printf("\033[%dA\033[%dD", ROWS, TOTAL_COLS);
         }
+        // I use this function do have more flexibility than memcpy
         swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
         //Sleep(40);
 
@@ -145,14 +168,11 @@ void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL
     int currentSelection;
     int x = 0, y = 0;
 
-    // this must be changed to not update the velocity vector.
-    //initialize_char_pointer_array(backBuffer, rows, cols, ' ');
     for(y = 0; y < rows; y++){
         for(x = 0; x < cols; x++){
             backBuffer[y][x] = ' ';
         }
     }
-    
     
     /*
         read front -> update back.
@@ -171,8 +191,6 @@ void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL
         }
         dx = (Vx == '1' ? 1 : Vx == '2' ? -1 : 0);
         backBuffer[y][cols] = Vx;
-
-
         for(x = 0; x < cols; x++){
             currentSelection = frontBuffer[y][x];
             if(currentSelection == ENEMY_2 || currentSelection == ENEMY_1){
