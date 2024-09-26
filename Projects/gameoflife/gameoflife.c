@@ -112,9 +112,9 @@ void display(char arr[ROW][COL]){
     for(y=0; y<ROW; y++){
   
         for(x=0; x< COL; x++){
-            printf("%c",graphics[(arr[y][x])]);
+            putchar(graphics[(arr[y][x])]);
         }
-        printf("\n");
+        putchar('\n');
     }
 
 }
