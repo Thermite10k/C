@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <windows.h>
 
 #define ROWS 15
-#define COLS 40
+#define COLS 80
 #define TOTAL_COLS (COLS + 1)
 /*
     NAMING CONVENTION
@@ -44,9 +45,6 @@ void update_game_state(char (*arrayBack)[TOTAL_COLS], char (*arrayFront)[TOTAL_C
 // swaps the arrays, int cols MUST BE TOTAL_COLS to swap the velocity vector too.
 void swaparrays(char (*arrayTo)[TOTAL_COLS], char (*arrayFrom)[TOTAL_COLS], int rows, int cols);
 
-// returns 1 if it's hitting a wall, returns 2 if it's hitting the bottom
-// if y == 1 || y == rows  OR x == 1 || cols, we have a collision
-int check_for_collision(int y, int x, int rows, int cols);
 int main(){
 
     // we use a two buffer approach
@@ -60,18 +58,18 @@ int main(){
     initialize_char_pointer_array(frontBuffer, ROWS, COLS);
     initialize_char_pointer_array(backBuffer, ROWS, COLS);
     setup_front_buffer(frontBuffer, ROWS, COLS);
-    display(frontBuffer, ROWS, COLS);
     int frames = 10000000;
     int framesindex = 0;
 
     while(1){
         display(frontBuffer, ROWS, COLS);
-        if(!(framesindex % 1000000)){
+        if(!(framesindex % 100000)){
 
         update_game_state(backBuffer, frontBuffer, ROWS, COLS);
         printf("\033[%dA\033[%dD", ROWS, TOTAL_COLS);
         }
         swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
+        //Sleep(40);
 
         framesindex = (framesindex++ % frames);
     }
@@ -91,7 +89,6 @@ void initialize_char_pointer_array(char (*array)[TOTAL_COLS], int rows, int cols
 
     va_list ap;
     char initializeTo;
-    int direction;
     int y = 0, x = 0;
     va_start(ap, cols);
     if(!(initializeTo = va_arg(ap, int))){
@@ -167,20 +164,19 @@ void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL
     for(y = 0; y < rows; y++){
         Vx = frontBuffer[y][cols]; // the velocity vector
         
-        
         if(Vx == '1' && frontBuffer[y][cols - 2] != ' '){
             Vx = '2';
         }else if(Vx == '2' && frontBuffer[y][1] != ' '){
             Vx = '1';
         }
+        dx = (Vx == '1' ? 1 : Vx == '2' ? -1 : 0);
         backBuffer[y][cols] = Vx;
 
-        //printf("d = %d\n", dx);
 
         for(x = 0; x < cols; x++){
             currentSelection = frontBuffer[y][x];
             if(currentSelection == ENEMY_2 || currentSelection == ENEMY_1){
-                    backBuffer[y][x + (Vx == '1' ? 1 : -1)] = currentSelection;                
+                    backBuffer[y][x + dx] = currentSelection;                
             }else{
                 if(backBuffer[y][x] == ' '){
                     backBuffer[y][x] = currentSelection;
@@ -190,19 +186,7 @@ void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL
     }
  
 }
-/*
-    Note: this function fails if it's hitting a corner, use conditions to fix it
-          if corners become a thing, for now, this will work.
-*/
-int check_for_collision(int y, int x, int rows, int cols){
-    if(y == 1 || y == rows){
-        return(2);
-    }
-    if(x == 1 || x == cols){
-        return(1);
-    }
-    return(0);
-}
+
 void swaparrays(char (*arrayTo)[TOTAL_COLS],char (*arrayFrom)[TOTAL_COLS], int rows, int cols){
     int x = 0, y = 0;
 
