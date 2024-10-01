@@ -13,6 +13,21 @@
     myVariable - exception for two char vars such as dx, Vy, etc
     ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 */
+
+/*
+    CARDS:
+        A-K-Q-J-T-9,8,7,6,5,4,3,2
+        H                       L
+
+    TYPES:
+        -Five of a kind  -> AAAAA - 7
+        -Four of a kind  -> AA2AA - 6
+        -Full house      -> 33444 - 5
+        -Three of a kind -> QQQA2 - 4
+        -Two pair        -> QQKK3 - 3
+        -One pair        -> 4437A - 2
+        -High card       -> 45678 - 1
+*/
 struct tNode {
 
     char *hand;
