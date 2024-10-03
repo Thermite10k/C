@@ -5,6 +5,7 @@
 
 #define TEST_INPUT "key.txt"
 #define MAX_WORD 100
+#define CARDS 13
 /*
     NAMING CONVENTION
     ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -37,6 +38,8 @@ struct tNode {
     struct tNode *left;
 };
 
+int get_card_index(char card);
+int get_hand_type(char *hand);
 char get_f_char(FILE *fp);
 void unget_f_char(char c);
 
@@ -54,7 +57,8 @@ int main(){
     struct tNode *root = NULL;
 
     while(get_f_word(MAX_WORD, word, fp) != EOF){
-        printf("deck is: %s ", word);
+        printf("deck is: %s\n", word);
+        get_hand_type(word);
         get_f_word(MAX_WORD, word, fp);
         printf("bid is %d\n", atoi(word));
     }
@@ -125,3 +129,70 @@ struct tNode *add_tree(char *hand, struct tNode *node){
 
 }
 
+int get_card_index(char card){
+    
+    if(isdigit(card)){
+        return card - '0'; // return the integer of digit
+    }else{
+        switch(card){
+            case 'A':
+                return 14;
+                break;
+            case 'K':
+                return 13;
+                break;
+            case 'Q':
+                return 12;
+                break;
+            case 'J':
+                return 11;
+            case 'T':
+                return 10;
+                break;
+        }
+    }
+
+    return 0;
+
+}
+
+int get_hand_type(char *hand){
+    struct cardInfo {
+        char card;
+        int count;
+    };
+    struct cardInfo **table = calloc(CARDS+10, sizeof(struct cardInfo *));
+    char c;
+    int cardIndex = 0;
+    int i = 0;
+
+
+
+
+    while((c = *hand)){
+        struct cardInfo *thisCard;
+        cardIndex = get_card_index(c);
+        
+        if((table[cardIndex]) == NULL){
+            
+            thisCard = (struct cardInfo *) malloc(sizeof(struct cardInfo));
+            thisCard->card = c;
+            thisCard->count = 1;
+            table[cardIndex] = thisCard;
+        }else{
+            thisCard = table[cardIndex];
+            thisCard->count = thisCard->count + 1;
+        }
+        hand++;
+    }
+    /*
+        DON'T FORGET TO FREE THE MEMORY BEFOER RETURNING
+    */
+    for(i = 0; i < CARDS+10; i++){
+        struct cardInfo *myCard = table[i];
+        if(myCard != NULL){
+            printf("card: %c, count: %d\n", myCard->card, myCard->count);
+        }
+    }
+    
+}
