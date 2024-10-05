@@ -31,7 +31,11 @@ enum env{
     PLAYER_BULLET = 30, PLAYER_SHIP = 'A', // player
     ENV_BRICK_HALF = 254, ENV_BRICK_FULL = 219 // making the envirenment
 };
-
+enum keys{
+        RIGHT = 'M',
+        LEFT = 'K',
+        FIRE = ' ',
+    };
 void display(char (*array)[TOTAL_COLS], int rows, int cols);
 
 // initializes the array to either ' ' or whatever char is given as the second arg
@@ -41,7 +45,7 @@ void initialize_char_pointer_array(char (*array)[TOTAL_COLS], int rows, int cols
 void setup_front_buffer(char (*array)[TOTAL_COLS], int rows, int cols);
 
 // reads the fron buffer and puts the new instance in backbuffer
-void update_game_state(char (*arrayBack)[TOTAL_COLS], char (*arrayFront)[TOTAL_COLS], int rows, int cols);
+void update_game_state(char (*arrayBack)[TOTAL_COLS], char (*arrayFront)[TOTAL_COLS], int rows, int cols, char kb_event);
 
 // swaps the arrays, int cols MUST BE TOTAL_COLS to swap the velocity vector too.
 void swaparrays(char (*arrayTo)[TOTAL_COLS], char (*arrayFrom)[TOTAL_COLS], int rows, int cols);
@@ -53,12 +57,8 @@ int main(){
     char frontBuffer[ROWS][TOTAL_COLS];
     char backBuffer[ROWS][TOTAL_COLS];
     
-    enum keys{
-        RIGHT = 'M',
-        LEFT = 'K',
-        FIRE = ' ',
-    };
 
+    
 
     initialize_char_pointer_array(frontBuffer, ROWS, COLS);
     initialize_char_pointer_array(backBuffer, ROWS, COLS);
@@ -69,32 +69,20 @@ int main(){
 
     while(1){
         key_event = 0;
-        if(kbhit()){
-            switch((key_event = getch())){
-                case RIGHT:
-                    printf("->\n");
-                    break;
-                case LEFT:
-                    printf("<-\n");
-                    break;
-                case FIRE:
-                    printf("%c\n", PLAYER_BULLET);
-                    break;
-                
-            }
-        }
         
         display(frontBuffer, ROWS, COLS);
-        if(!(framesindex % 100000)){
 
-        update_game_state(backBuffer, frontBuffer, ROWS, COLS);
-        printf("\033[%dA\033[%dD", ROWS, TOTAL_COLS);
+
+        if(kbhit()){
+           key_event = getch();
         }
+        update_game_state(backBuffer, frontBuffer, ROWS, COLS, key_event);
+        printf("\033[%dA\033[%dD", ROWS, TOTAL_COLS);
+        
         // I use this function do have more flexibility than memcpy
         swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
         //Sleep(40);
 
-        framesindex = (framesindex++ % frames);
     }
 
     return 0;
@@ -160,7 +148,7 @@ void setup_front_buffer(char (*array)[TOTAL_COLS], int rows, int cols){
     array[rows-2][middle] = PLAYER_SHIP;
 }
 
-void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL_COLS], int rows, int cols){
+void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL_COLS], int rows, int cols, char kb_event){
 
     enum collisions {WALL = 1, TOP_BOTTOM = 2};
     char Vx = '1';
@@ -193,13 +181,66 @@ void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL
         backBuffer[y][cols] = Vx;
         for(x = 0; x < cols; x++){
             currentSelection = frontBuffer[y][x];
-            if(currentSelection == ENEMY_2 || currentSelection == ENEMY_1){
-                    backBuffer[y][x + dx] = currentSelection;                
-            }else{
-                if(backBuffer[y][x] == ' '){
-                    backBuffer[y][x] = currentSelection;
-                }
-            }
+            switch(currentSelection){
+                case ENEMY_2:
+                    if(frontBuffer[y+1][x] == PLAYER_BULLET){
+                        currentSelection = ENEMY_1;
+                        frontBuffer[y+1][x] = ' ';
+                    }
+                    backBuffer[y][x + dx] = currentSelection;
+                    break;
+                case ENEMY_1:
+                    if(frontBuffer[y+1][x] == PLAYER_BULLET){
+                        currentSelection = ENEMY_0;
+                        frontBuffer[y+1][x] = ' ';
+                    }
+                    backBuffer[y][x + dx] = currentSelection;
+                
+                    break;
+                case ENEMY_0:
+                    backBuffer[y][x] = ' ';
+                    break;
+
+                case PLAYER_SHIP:
+                    if(kb_event == RIGHT){
+                        if(x < COLS - 2){ // m cols, m-1 is the wall, m-2 is the last valid space
+                            backBuffer[y][x+1] = currentSelection;
+                        }else{
+                        backBuffer[y][x] = currentSelection;
+                    }
+
+                    }else if(kb_event == LEFT){
+                        if(x > 1){
+                            backBuffer[y][x-1] = currentSelection;
+                        }else{
+                        backBuffer[y][x] = currentSelection;
+                    }
+
+                    }else{
+                        backBuffer[y][x] = currentSelection;
+                    }
+                    if(kb_event == FIRE){
+                        backBuffer[y-1][x] = PLAYER_BULLET;
+                    }
+                    break;
+                case PLAYER_BULLET:
+                    if(y > 1){
+                        backBuffer[y-1][x] = PLAYER_BULLET;
+                        backBuffer[y][x] = ' ';
+                    }
+                    break;
+                default:
+                    if(backBuffer[y][x] == ' '){
+                        backBuffer[y][x] = currentSelection;
+                    }
+            }   
+            // if(currentSelection == ENEMY_2 || currentSelection == ENEMY_1){
+            //         backBuffer[y][x + dx] = currentSelection;                
+            // }else{
+            //     if(backBuffer[y][x] == ' '){
+            //         backBuffer[y][x] = currentSelection;
+            //     }
+            // }
         }
     }
  
