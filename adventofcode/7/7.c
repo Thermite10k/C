@@ -81,8 +81,7 @@ int main(){
     add_rank_to_tree(root, &count);
     printf("Hand\trank\tbid\ttype\trank*bid\n\n");
     tree_print(root, &sum_winners);
-    
-    printf("\t\t\t\tsum:\t%d\n", sum_winners);
+    printf("\t\t\t\tsum:\t%ld\n", sum_winners);
 
     return 0;
 }
@@ -148,9 +147,9 @@ struct tNode *add_tree(char *hand, int type, int bid, struct tNode *node){
         node->right = NULL;
         node->left = NULL;
     }else if(type == node->type){
-        if(compare_same_type(hand, node->hand)){ // if hand > node-> hand
+        if((cond = compare_same_type(hand, node->hand)) == 1){ // if hand > node-> hand
             node->right = add_tree(hand, type, bid, node->right);
-        }else{
+        }else if (cond == -1){
             node->left = add_tree(hand, type, bid, node->left);
         }
     }else if(type > node->type){
@@ -186,9 +185,9 @@ void add_rank_to_tree(struct tNode *node, int *count){
 }
 int get_card_index(char card){
     // 0 1 2 3 4 5 6 7 8 9 10 11 12
-    // 2 3 4 5 6 7 8 9 T J Q  K  A
+    // J 2 3 4 5 6 7 8 9 T Q  K  A
     if(isdigit(card)){
-        return card - '0' - 2; // return the index, 2 is 0, 3 is 1, 9 is 7 etc
+        return card - '0' - 1; // return the index, 2 is 0, 3 is 1, 9 is 7 etc
     }else{
         switch(card){
             case 'A':
@@ -201,10 +200,10 @@ int get_card_index(char card){
                 return 10;
                 break;
             case 'J':
-                return 9;
+                return 0;
                 break;
             case 'T':
-                return 8;
+                return 9;
                 break;
             default:
                 fprintf(stderr, "Invalid card: %c\n", card);
@@ -241,15 +240,16 @@ int get_hand_type(char *hand){
     };
     struct cardInfo **table = calloc(CARDS, sizeof(struct cardInfo *));
     char c;
+    char* handptr = hand;
     int cardIndex = 0;
-    int i = 0;
+    int i = 0, secondMax = 0;
     int max = 0, nUnique = 0;
 
 
 
 
-    while((c = *hand)){
-        struct cardInfo *thisCard;
+    struct cardInfo *thisCard;
+    while((c = *handptr)){
         cardIndex = get_card_index(c);
         
         if((table[cardIndex]) == NULL){
@@ -262,19 +262,35 @@ int get_hand_type(char *hand){
             thisCard = table[cardIndex];
             thisCard->count = thisCard->count + 1;
         }
-        hand++;
+        handptr++;
     }
     /*
         DON'T FORGET TO FREE THE MEMORY BEFOER RETURNING
     */
-    for(i = 0; i < CARDS; i++){
-        struct cardInfo *thisCard = table[i];
-        if(thisCard != NULL){
+    for(i = 1; i < CARDS; i++){ // start from 1 since we want to know the max except for the joker
+        struct cardInfo *thisHand = table[i];
+        if(thisHand != NULL){
             nUnique ++;
-            max = thisCard->count > max ? thisCard->count : max;
+            if(thisHand->count > max){
+              
+                max = thisHand->count;
+            }
+            //max = thisHand->count > max ? thisHand->count : max;
         }
     }
-
+    if(table[0] != NULL){// if hand had joker
+        nUnique++; // this is because we don't increment nUnique for the joker(i starts at 1), so we do it now.
+        if(nUnique >= 2){ 
+            
+            max = max + table[0]->count;
+            
+            nUnique--;
+            
+        }else if(nUnique == 1){ // JJJJJ case
+            max = 5;
+        }
+    }
+    //printf("got %s, max: %d,  n_unique: %d, secondMax: %d\n", hand, max, nUnique, secondMax);
     return(cardTypeArr[max][nUnique]);
     
 }
