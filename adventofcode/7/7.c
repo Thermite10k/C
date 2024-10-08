@@ -280,7 +280,7 @@ int get_hand_type(char *hand){
     }
     if(table[0] != NULL){// if hand had joker
         nUnique++; // this is because we don't increment nUnique for the joker(i starts at 1), so we do it now.
-        if(nUnique >= 2){ 
+        if(nUnique >= 2){ // if there is an other type other than joker
             
             max = max + table[0]->count;
             
