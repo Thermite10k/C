@@ -36,6 +36,8 @@ struct tNode {
 
     char *hand;
     int rank;
+    int type;
+    int bid;
 
     struct tNode *right;
     struct tNode *left;
@@ -43,28 +45,37 @@ struct tNode {
 
 int get_card_index(char card);
 int get_hand_type(char *hand);
+// hand1 > hand2 ? 1 : -1
+int compare_same_type(const char *hand1, const char *hand2);
 char get_f_char(FILE *fp);
 void unget_f_char(char c);
 
 char get_f_word(int size, char *word, FILE *fp);
 
 struct tNode *t_alloc();
-struct tNode *add_tree(char *hand, struct tNode *node);
+struct tNode *add_tree(char *hand, int type, int bid, struct tNode *node);
+void tree_print(struct tNode *node);
 
 
 int main(){
     
-    char word[MAX_WORD];
+    char hand[MAX_WORD];
+    char bid[MAX_WORD];
+    int type = 0;
     FILE *fp = fopen(TEST_INPUT, "r");
 
     struct tNode *root = NULL;
 
-    while(get_f_word(MAX_WORD, word, fp) != EOF){
-        printf("deck is: %s\n", word);
-        get_hand_type(word);
-        get_f_word(MAX_WORD, word, fp);
-        printf("bid is %d\n", atoi(word));
+    while(get_f_word(MAX_WORD, hand, fp) != EOF){
+        type = get_hand_type(hand);
+        get_f_word(MAX_WORD, bid, fp);
+        root = add_tree(hand, type, atoi(bid), root);
     }
+    if(root == NULL){
+        printf("\n ROOT IS NULL !\n");
+    }
+    printf("Hand    rank\ttype\n\n");
+    tree_print(root);
     return 0;
 }
 
@@ -118,20 +129,40 @@ char get_f_word(int size, char *word, FILE *fp){
 struct tNode *t_alloc(){
     return (struct tNode *) malloc(sizeof(struct tNode));
 }
-struct tNode *add_tree(char *hand, struct tNode *node){
-
+struct tNode *add_tree(char *hand, int type, int bid, struct tNode *node){
+    int cond = 0;
     if(node == NULL){
         node = t_alloc();
         node->hand = strdup(hand);
         node->rank = 0;
+        node->type = type;
+        node->bid = bid;
         node->right = node-> left = NULL;
+    }else if(type == node->type){
+        if(compare_same_type(hand, node->hand)){ // if hand > node-> hand
+            node->left = add_tree(hand, type, bid, node->left);
+        }else{
+            node->right = add_tree(hand, type, bid, node->right);
+        }
+    }else if(type > node->type){
+        node->right = add_tree(hand, type, bid, node->right);
+    }else{
+        node->left = add_tree(hand, type, bid, node->left);
     }
-    // add card checking algorithms...
+  
 
-    return NULL;
+    return node;
 
 }
 
+void tree_print(struct tNode *node){
+
+    if (node != NULL){
+        tree_print(node->left);
+        printf("%s\t%d\t%d\n", node->hand, node->rank, node->type);
+        tree_print(node->right);
+    }
+}
 int get_card_index(char card){
     // 0 1 2 3 4 5 6 7 8 9 10 11 12
     // 2 3 4 5 6 7 8 9 T J Q  K  A
@@ -215,10 +246,22 @@ int get_hand_type(char *hand){
         if(thisCard != NULL){
             nUnique ++;
             max = thisCard->count > max ? thisCard->count : max;
-            printf("card: %c, count: %d\n", thisCard->card, thisCard->count);
         }
     }
 
-    printf("%d\n", cardTypeArr[max][nUnique]);
+    return(cardTypeArr[max][nUnique]);
     
+}
+
+// hand1 > hand2 ? 1 : -1
+int compare_same_type(const char *hand1, const char *hand2){
+    
+    while(*hand1 == *hand2){
+        hand1++;
+        hand2++;
+    }
+    int index1 = get_card_index(*hand1);
+    int index2 = get_card_index(*hand2);
+    
+    return index1 > index2 ? 1 : -1; 
 }
