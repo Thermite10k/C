@@ -19,43 +19,43 @@
     These are the characters that represent game objects
     O: enemy, lvl 1
     M: enemy, lvl 2
-    X: enemy, lvl 0 - will die next time it's printed
+    X: enemy, lvl 0 - will die next time it's evaluated
     ASCII 30: Player bullet
-    A: player ship
-    ASCII 254: player bullet
+    ASCII 202 ╩: player ship
+    ASCII 194 ┬: player bullet
     |: enemy bullet
 */
 
 enum env{
     ENEMY_1 = 'O', ENEMY_2 = 'M', ENEMY_0 = 'X', ENEMY_BULLET = '|', // enemy
-    PLAYER_BULLET = 30, PLAYER_SHIP = 'A', // player
-    ENV_BRICK_HALF = 254, ENV_BRICK_FULL = 219 // making the envirenment
+    PLAYER_BULLET = 197, PLAYER_SHIP = 202, // player
+    ENV_BRICK_HALF = 254, ENV_BRICK_FULL = 219 // envirenment
 };
 enum keys{
         RIGHT = 'M',
         LEFT = 'K',
         FIRE = ' ',
     };
-void display(char (*array)[TOTAL_COLS], int rows, int cols);
+void display(int (*array)[TOTAL_COLS], int rows, int cols);
 
 // initializes the array to either ' ' or whatever char is given as the second arg
-void initialize_char_pointer_array(char (*array)[TOTAL_COLS], int rows, int cols, ...);
+void initialize_char_pointer_array(int (*array)[TOTAL_COLS], int rows, int cols, ...);
 
 // setsup the frontBuffer to start the game
-void setup_front_buffer(char (*array)[TOTAL_COLS], int rows, int cols);
+void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols);
 
 // reads the fron buffer and puts the new instance in backbuffer
-void update_game_state(char (*arrayBack)[TOTAL_COLS], char (*arrayFront)[TOTAL_COLS], int rows, int cols, char kb_event);
+void update_game_state(int (*arrayBack)[TOTAL_COLS], int (*arrayFront)[TOTAL_COLS], int rows, int cols, char kb_event);
 
 // swaps the arrays, int cols MUST BE TOTAL_COLS to swap the velocity vector too.
-void swaparrays(char (*arrayTo)[TOTAL_COLS], char (*arrayFrom)[TOTAL_COLS], int rows, int cols);
+void swaparrays(int (*arrayTo)[TOTAL_COLS], int (*arrayFrom)[TOTAL_COLS], int rows, int cols);
 
 int main(){
 
     // we use a two buffer approach
     // total cols is cols+1 to save the direction of each col too, 1 is right, two is left
-    char frontBuffer[ROWS][TOTAL_COLS];
-    char backBuffer[ROWS][TOTAL_COLS];
+    int frontBuffer[ROWS][TOTAL_COLS];
+    int backBuffer[ROWS][TOTAL_COLS];
     
 
     
@@ -87,7 +87,7 @@ int main(){
 
     return 0;
 }
-void display(char (*array)[TOTAL_COLS], int rows, int cols){
+void display(int (*array)[TOTAL_COLS], int rows, int cols){
     int y = 0, x = 0;
     for(y = 0; y < rows; y++){
         for(x = 0; x <= cols; x++){
@@ -96,7 +96,7 @@ void display(char (*array)[TOTAL_COLS], int rows, int cols){
         putchar('\n');
     }
 }
-void initialize_char_pointer_array(char (*array)[TOTAL_COLS], int rows, int cols, ...){
+void initialize_char_pointer_array(int (*array)[TOTAL_COLS], int rows, int cols, ...){
 
     va_list ap;
     char initializeTo;
@@ -115,7 +115,7 @@ void initialize_char_pointer_array(char (*array)[TOTAL_COLS], int rows, int cols
     va_end(ap);
 
 }
-void setup_front_buffer(char (*array)[TOTAL_COLS], int rows, int cols){    
+void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols){    
 
     int y = 0, x = 0;
 
@@ -148,7 +148,7 @@ void setup_front_buffer(char (*array)[TOTAL_COLS], int rows, int cols){
     array[rows-2][middle] = PLAYER_SHIP;
 }
 
-void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL_COLS], int rows, int cols, char kb_event){
+void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_COLS], int rows, int cols, char kb_event){
 
     enum collisions {WALL = 1, TOP_BOTTOM = 2};
     char Vx = '1';
@@ -203,6 +203,7 @@ void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL
 
                 case PLAYER_SHIP:
                     if(kb_event == RIGHT){
+                  
                         if(x < COLS - 2){ // m cols, m-1 is the wall, m-2 is the last valid space
                             backBuffer[y][x+1] = currentSelection;
                         }else{
@@ -220,6 +221,7 @@ void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL
                         backBuffer[y][x] = currentSelection;
                     }
                     if(kb_event == FIRE){
+                        PlaySound(TEXT("./chord.wav"), NULL, SND_ASYNC);
                         backBuffer[y-1][x] = PLAYER_BULLET;
                     }
                     break;
@@ -246,7 +248,7 @@ void update_game_state(char (*backBuffer)[TOTAL_COLS], char (*frontBuffer)[TOTAL
  
 }
 
-void swaparrays(char (*arrayTo)[TOTAL_COLS],char (*arrayFrom)[TOTAL_COLS], int rows, int cols){
+void swaparrays(int (*arrayTo)[TOTAL_COLS],int (*arrayFrom)[TOTAL_COLS], int rows, int cols){
     int x = 0, y = 0;
 
     for(y = 0; y < rows; y++){
