@@ -21,13 +21,16 @@
         H                       L
 
     TYPES:
-        -Five of a kind  -> AAAAA - 7
-        -Four of a kind  -> AA2AA - 6
-        -Full house      -> 33444 - 5
-        -Three of a kind -> QQQA2 - 4
-        -Two pair        -> QQKK3 - 3
-        -One pair        -> 4437A - 2
-        -High card       -> 45678 - 1
+        |Name:            | e.g. |index| Features:
+        _____________________________________________________
+        -Five of a kind  -> AAAAA - 6 - max: 5 - n_unique = 1
+        -Four of a kind  -> AA2AA - 5 - max: 4 - n_unique = 2
+        -Full house      -> 33444 - 4 - max: 3 - n_unique = 2
+        -Three of a kind -> QQQA2 - 3 - max: 3 - n_unique = 3
+        -Two pair        -> QQKK3 - 2 - max: 2 - n_unique = 3
+        -One pair        -> 4437A - 1 - max: 2 - n_unique = 4
+        -High card       -> 45678 - 0 - max: 1 - n_unique = 5
+        _____________________________________________________
 */
 struct tNode {
 
@@ -130,41 +133,60 @@ struct tNode *add_tree(char *hand, struct tNode *node){
 }
 
 int get_card_index(char card){
-    
+    // 0 1 2 3 4 5 6 7 8 9 10 11 12
+    // 2 3 4 5 6 7 8 9 T J Q  K  A
     if(isdigit(card)){
-        return card - '0'; // return the integer of digit
+        return card - '0' - 2; // return the index, 2 is 0, 3 is 1, 9 is 7 etc
     }else{
         switch(card){
             case 'A':
-                return 14;
-                break;
-            case 'K':
-                return 13;
-                break;
-            case 'Q':
                 return 12;
                 break;
-            case 'J':
+            case 'K':
                 return 11;
-            case 'T':
+                break;
+            case 'Q':
                 return 10;
+                break;
+            case 'J':
+                return 9;
+            case 'T':
+                return 8;
                 break;
         }
     }
 
-    return 0;
+    return -1;
 
 }
 
 int get_hand_type(char *hand){
+
+    /*
+    
+        This 2D array takes [max][nUnique] and returns a number between 0-7 based on the hand type.
+    
+    */
+
+    static int cardTypeArr[][6] = {
+//   max: 0   1   2   3   4   5| nUnique 
+        {-1, -1, -1, -1, -1, -1},// 0
+        {-1, -1, -1, -1, -1,  0},// 1 
+        {-1, -1, -1,  2,  1, -1},// 2
+        {-1, -1,  4,  3, -1, -1},// 3
+        {-1, -1,  5, -1, -1, -1},// 4
+        {-1,  6, -1, -1, -1, -1},// 5
+    };
+
     struct cardInfo {
         char card;
         int count;
     };
-    struct cardInfo **table = calloc(CARDS+10, sizeof(struct cardInfo *));
+    struct cardInfo **table = calloc(CARDS, sizeof(struct cardInfo *));
     char c;
     int cardIndex = 0;
     int i = 0;
+    int max = 0, nUnique = 0;
 
 
 
@@ -188,11 +210,15 @@ int get_hand_type(char *hand){
     /*
         DON'T FORGET TO FREE THE MEMORY BEFOER RETURNING
     */
-    for(i = 0; i < CARDS+10; i++){
-        struct cardInfo *myCard = table[i];
-        if(myCard != NULL){
-            printf("card: %c, count: %d\n", myCard->card, myCard->count);
+    for(i = 0; i < CARDS; i++){
+        struct cardInfo *thisCard = table[i];
+        if(thisCard != NULL){
+            nUnique ++;
+            max = thisCard->count > max ? thisCard->count : max;
+            printf("card: %c, count: %d\n", thisCard->card, thisCard->count);
         }
     }
+
+    printf("%d\n", cardTypeArr[max][nUnique]);
     
 }
