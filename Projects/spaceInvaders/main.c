@@ -43,6 +43,7 @@ struct gameState {
         int score;
         int userInput;
         int frame;
+        int mode;
     };
 void display(int (*array)[TOTAL_COLS], int rows, int cols);
 
@@ -53,7 +54,7 @@ void initialize_char_pointer_array(int (*array)[TOTAL_COLS], int rows, int cols,
 void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols);
 
 // reads the fron buffer and puts the new instance in backbuffer
-void update_game_state(int (*arrayBack)[TOTAL_COLS], int (*arrayFront)[TOTAL_COLS], int rows, int cols, int mode, struct gameState* state);
+void update_game_state(int (*arrayBack)[TOTAL_COLS], int (*arrayFront)[TOTAL_COLS], int rows, int cols, struct gameState* state);
 
 // swaps the arrays, int cols MUST BE TOTAL_COLS to swap the velocity vector too.
 void swaparrays(int (*arrayTo)[TOTAL_COLS], int (*arrayFrom)[TOTAL_COLS], int rows, int cols);
@@ -66,8 +67,21 @@ int main(){
     int backBuffer[ROWS][TOTAL_COLS];
     
 
-    struct gameState myState = {.score = 0, .userInput = 0, .frame = 0};
+    struct gameState myState = {
+    .score = 0,
+    .userInput = 0,
+    .frame = 0,
+    .mode = GAME_MODE
+    };
+    /*
+    
+        To hide the cursor: printf("\e[?25l");
 
+        To re-enable the cursor: printf("\e[?25h");
+
+    */
+    printf("\e[?25l");
+    PlaySound(TEXT("./tada.wav"), NULL, SND_ASYNC);
     
 
     initialize_char_pointer_array(frontBuffer, ROWS, COLS);
@@ -82,17 +96,16 @@ int main(){
         myState.frame = framesindex;
         printf("Score: %d\n", myState.score);
         display(frontBuffer, ROWS, COLS);
-
-
         if(kbhit()){
            myState.userInput =  getch();
         }
         if((framesindex % 8) == 0){
-            update_game_state(backBuffer, frontBuffer, ROWS, COLS, GAME_MODE, &myState);
+            myState.mode = GAME_MODE;
         }else{
-            update_game_state(backBuffer, frontBuffer, ROWS, COLS, PLAYER_MODE, &myState);
+            myState.mode = PLAYER_MODE;
         }
-        printf("\033[%dA\033[%dD", ROWS+1, TOTAL_COLS);
+        update_game_state(backBuffer, frontBuffer, ROWS, COLS, &myState);
+        printf("\033[%dA\033[%dD", ROWS+1, TOTAL_COLS); // ROWS+1 to account for the "score:" line.
         
         // I use this function do have more flexibility than memcpy
         swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
@@ -163,7 +176,7 @@ void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols){
     array[rows-2][middle] = PLAYER_SHIP;
 }
 
-void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_COLS], int rows, int cols, int mode, struct gameState* state){
+void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_COLS], int rows, int cols, struct gameState* state){
 
     enum collisions {WALL = 1, TOP_BOTTOM = 2};
     char Vx = '1';
@@ -199,7 +212,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
             
         }
         dx = (Vx == '1' ? 1 : Vx == '2' ? -1 : 0);
-        if(mode == PLAYER_MODE){
+        if(state->mode == PLAYER_MODE){
             dx = 0;
         }
         backBuffer[y][cols] = Vx;
@@ -263,13 +276,6 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                         backBuffer[y][x] = currentSelection;
                     }
             }   
-            // if(currentSelection == ENEMY_2 || currentSelection == ENEMY_1){
-            //         backBuffer[y][x + dx] = currentSelection;                
-            // }else{
-            //     if(backBuffer[y][x] == ' '){
-            //         backBuffer[y][x] = currentSelection;
-            //     }
-            // }
         }
     }
  
