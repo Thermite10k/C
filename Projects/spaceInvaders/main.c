@@ -30,12 +30,19 @@ enum env{
     ENEMY_1 = 'O', ENEMY_2 = 'M', ENEMY_0 = 'X', ENEMY_BULLET = '|', // enemy
     PLAYER_BULLET = 197, PLAYER_SHIP = 202, // player
     ENV_BRICK_HALF = 254, ENV_BRICK_FULL = 219, // envirenment
-    PLAYER_ONLY = 1, GAME_MODE = 2 // PLAYER_ONLY: move the ship and bullet only. GAME_MODE: update everything
+    PLAYER_MODE = 1, GAME_MODE = 2, // PLAYER_MODE: move the ship and bullet only. GAME_MODE: update everything
+    MAX_BULLETS = 5, // maximum bullets on the screen
+    ENV_DESCENT_RATE = 300, // the higher it is, the slower they fall
 };
 enum keys{
         RIGHT = 'M',
         LEFT = 'K',
         FIRE = ' ',
+    };
+struct gameState {
+        int score;
+        int userInput;
+        int frame;
     };
 void display(int (*array)[TOTAL_COLS], int rows, int cols);
 
@@ -46,7 +53,7 @@ void initialize_char_pointer_array(int (*array)[TOTAL_COLS], int rows, int cols,
 void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols);
 
 // reads the fron buffer and puts the new instance in backbuffer
-void update_game_state(int (*arrayBack)[TOTAL_COLS], int (*arrayFront)[TOTAL_COLS], int rows, int cols, char kb_event, int mode);
+void update_game_state(int (*arrayBack)[TOTAL_COLS], int (*arrayFront)[TOTAL_COLS], int rows, int cols, int mode, struct gameState* state);
 
 // swaps the arrays, int cols MUST BE TOTAL_COLS to swap the velocity vector too.
 void swaparrays(int (*arrayTo)[TOTAL_COLS], int (*arrayFrom)[TOTAL_COLS], int rows, int cols);
@@ -59,6 +66,8 @@ int main(){
     int backBuffer[ROWS][TOTAL_COLS];
     
 
+    struct gameState myState = {.score = 0, .userInput = 0, .frame = 0};
+
     
 
     initialize_char_pointer_array(frontBuffer, ROWS, COLS);
@@ -66,23 +75,24 @@ int main(){
     setup_front_buffer(frontBuffer, ROWS, COLS);
     long frames = 10000000;
     long framesindex = 0;
-    int key_event = 0;
+    
 
     while(1){
-        key_event = 0;
-        
+        myState.userInput = 0;
+        myState.frame = framesindex;
+        printf("Score: %d\n", myState.score);
         display(frontBuffer, ROWS, COLS);
 
 
         if(kbhit()){
-           key_event = getch();
+           myState.userInput =  getch();
         }
         if((framesindex % 8) == 0){
-            update_game_state(backBuffer, frontBuffer, ROWS, COLS, key_event, GAME_MODE);
+            update_game_state(backBuffer, frontBuffer, ROWS, COLS, GAME_MODE, &myState);
         }else{
-            update_game_state(backBuffer, frontBuffer, ROWS, COLS, key_event, PLAYER_ONLY);
+            update_game_state(backBuffer, frontBuffer, ROWS, COLS, PLAYER_MODE, &myState);
         }
-        printf("\033[%dA\033[%dD", ROWS, TOTAL_COLS);
+        printf("\033[%dA\033[%dD", ROWS+1, TOTAL_COLS);
         
         // I use this function do have more flexibility than memcpy
         swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
@@ -153,13 +163,17 @@ void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols){
     array[rows-2][middle] = PLAYER_SHIP;
 }
 
-void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_COLS], int rows, int cols, char kb_event, int mode){
+void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_COLS], int rows, int cols, int mode, struct gameState* state){
 
     enum collisions {WALL = 1, TOP_BOTTOM = 2};
     char Vx = '1';
     int dx = 1; // direction 1=r, -1=l
+    int dy = 0;
     int currentSelection;
     int x = 0, y = 0;
+    int bulletCount = 0;
+    int kbEvent = state->userInput;
+    dy = state->frame % ENV_DESCENT_RATE ? 0 : 1;
 
     for(y = 0; y < rows; y++){
         for(x = 0; x < cols; x++){
@@ -179,11 +193,13 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
         
         if(Vx == '1' && frontBuffer[y][cols - 2] != ' '){
             Vx = '2';
+            
         }else if(Vx == '2' && frontBuffer[y][1] != ' '){
             Vx = '1';
+            
         }
         dx = (Vx == '1' ? 1 : Vx == '2' ? -1 : 0);
-        if(mode == PLAYER_ONLY){
+        if(mode == PLAYER_MODE){
             dx = 0;
         }
         backBuffer[y][cols] = Vx;
@@ -193,16 +209,18 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                 case ENEMY_2:
                     if(frontBuffer[y+1][x] == PLAYER_BULLET){
                         currentSelection = ENEMY_1;
+                        state->score += y;
                         frontBuffer[y+1][x] = ' ';
                     }
-                    backBuffer[y][x + dx] = currentSelection;
+                    backBuffer[y + dy][x + dx] = currentSelection;
                     break;
                 case ENEMY_1:
                     if(frontBuffer[y+1][x] == PLAYER_BULLET){
+                        state->score += y/2;
                         currentSelection = ENEMY_0;
                         frontBuffer[y+1][x] = ' ';
                     }
-                    backBuffer[y][x + dx] = currentSelection;
+                    backBuffer[y + dy][x + dx] = currentSelection;
                 
                     break;
                 case ENEMY_0:
@@ -210,7 +228,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                     break;
                 
                 case PLAYER_SHIP:
-                    if(kb_event == RIGHT){
+                    if(kbEvent == RIGHT){
                   
                         if(x < COLS - 2){ // m cols, m-1 is the wall, m-2 is the last valid space
                             backBuffer[y][x+1] = currentSelection;
@@ -218,7 +236,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                         backBuffer[y][x] = currentSelection;
                     }
 
-                    }else if(kb_event == LEFT){
+                    }else if(kbEvent == LEFT){
                         if(x > 1){
                             backBuffer[y][x-1] = currentSelection;
                         }else{
@@ -228,12 +246,13 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                     }else{
                         backBuffer[y][x] = currentSelection;
                     }
-                    if(kb_event == FIRE){
+                    if(kbEvent == FIRE && bulletCount < MAX_BULLETS){
                         PlaySound(TEXT("./chord.wav"), NULL, SND_ASYNC);
                         backBuffer[y-1][x] = PLAYER_BULLET;
                     }
                     break;
                 case PLAYER_BULLET:
+                    bulletCount++;
                     if(y > 1){
                         backBuffer[y-1][x] = PLAYER_BULLET;
                         backBuffer[y][x] = ' ';
