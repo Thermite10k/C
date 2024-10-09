@@ -29,7 +29,8 @@
 enum env{
     ENEMY_1 = 'O', ENEMY_2 = 'M', ENEMY_0 = 'X', ENEMY_BULLET = '|', // enemy
     PLAYER_BULLET = 197, PLAYER_SHIP = 202, // player
-    ENV_BRICK_HALF = 254, ENV_BRICK_FULL = 219 // envirenment
+    ENV_BRICK_HALF = 254, ENV_BRICK_FULL = 219, // envirenment
+    PLAYER_ONLY = 1, GAME_MODE = 2 // PLAYER_ONLY: move the ship and bullet only. GAME_MODE: update everything
 };
 enum keys{
         RIGHT = 'M',
@@ -45,7 +46,7 @@ void initialize_char_pointer_array(int (*array)[TOTAL_COLS], int rows, int cols,
 void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols);
 
 // reads the fron buffer and puts the new instance in backbuffer
-void update_game_state(int (*arrayBack)[TOTAL_COLS], int (*arrayFront)[TOTAL_COLS], int rows, int cols, char kb_event);
+void update_game_state(int (*arrayBack)[TOTAL_COLS], int (*arrayFront)[TOTAL_COLS], int rows, int cols, char kb_event, int mode);
 
 // swaps the arrays, int cols MUST BE TOTAL_COLS to swap the velocity vector too.
 void swaparrays(int (*arrayTo)[TOTAL_COLS], int (*arrayFrom)[TOTAL_COLS], int rows, int cols);
@@ -63,8 +64,8 @@ int main(){
     initialize_char_pointer_array(frontBuffer, ROWS, COLS);
     initialize_char_pointer_array(backBuffer, ROWS, COLS);
     setup_front_buffer(frontBuffer, ROWS, COLS);
-    int frames = 10000000;
-    int framesindex = 0;
+    long frames = 10000000;
+    long framesindex = 0;
     int key_event = 0;
 
     while(1){
@@ -76,13 +77,17 @@ int main(){
         if(kbhit()){
            key_event = getch();
         }
-        update_game_state(backBuffer, frontBuffer, ROWS, COLS, key_event);
+        if((framesindex % 8) == 0){
+            update_game_state(backBuffer, frontBuffer, ROWS, COLS, key_event, GAME_MODE);
+        }else{
+            update_game_state(backBuffer, frontBuffer, ROWS, COLS, key_event, PLAYER_ONLY);
+        }
         printf("\033[%dA\033[%dD", ROWS, TOTAL_COLS);
         
         // I use this function do have more flexibility than memcpy
         swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
-        //Sleep(40);
-
+        
+        framesindex = (framesindex + 1) % frames;
     }
 
     return 0;
@@ -148,7 +153,7 @@ void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols){
     array[rows-2][middle] = PLAYER_SHIP;
 }
 
-void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_COLS], int rows, int cols, char kb_event){
+void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_COLS], int rows, int cols, char kb_event, int mode){
 
     enum collisions {WALL = 1, TOP_BOTTOM = 2};
     char Vx = '1';
@@ -178,6 +183,9 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
             Vx = '1';
         }
         dx = (Vx == '1' ? 1 : Vx == '2' ? -1 : 0);
+        if(mode == PLAYER_ONLY){
+            dx = 0;
+        }
         backBuffer[y][cols] = Vx;
         for(x = 0; x < cols; x++){
             currentSelection = frontBuffer[y][x];
@@ -200,7 +208,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                 case ENEMY_0:
                     backBuffer[y][x] = ' ';
                     break;
-
+                
                 case PLAYER_SHIP:
                     if(kb_event == RIGHT){
                   
