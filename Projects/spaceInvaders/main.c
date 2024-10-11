@@ -83,8 +83,8 @@ int main(){
     PlaySound(TEXT("./tada.wav"), NULL, SND_ASYNC);
     
 
-    initialize_char_pointer_array(frontBuffer, ROWS, COLS);
-    initialize_char_pointer_array(backBuffer, ROWS, COLS);
+    initialize_char_pointer_array(frontBuffer, ROWS, COLS, ' ');
+    initialize_char_pointer_array(backBuffer, ROWS, COLS, ' ');
     setup_front_buffer(frontBuffer, ROWS, COLS);
     long frames = 10000000;
     long framesindex = 0;
