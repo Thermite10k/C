@@ -20,19 +20,18 @@
     O: enemy, lvl 1
     M: enemy, lvl 2
     X: enemy, lvl 0 - will die next time it's evaluated
-    ASCII 30: Player bullet
     ASCII 202 ╩: player ship
     ASCII 194 ┬: player bullet
     |: enemy bullet
 */
 
 enum env{
-    ENEMY_1 = 'O', ENEMY_2 = 'M', ENEMY_0 = 'X', ENEMY_BULLET = '|', // enemy
+    ENEMY_1 = 'O', ENEMY_2 = 'M', ENEMY_0 = 'X', ENEMY_BULLET = '|', ENEMY_SPEED = 8, // enemy  , higher speed is actually easier, must comeup with a better name
     PLAYER_BULLET = 197, PLAYER_SHIP = 202, // player
     ENV_BRICK_HALF = 254, ENV_BRICK_FULL = 219, // envirenment
     PLAYER_MODE = 1, GAME_MODE = 2, // PLAYER_MODE: move the ship and bullet only. GAME_MODE: update everything
     MAX_BULLETS = 5, // maximum bullets on the screen
-    ENV_DESCENT_RATE = 300, // the higher it is, the slower they fall
+    ENV_DESCENT_RATE = 300,// the higher it is, the slower they fall
 };
 enum keys{
         RIGHT = 'M',
@@ -76,11 +75,11 @@ int main(){
     /*
     
         To hide the cursor: printf("\e[?25l");
-
+        \e = \033
         To re-enable the cursor: printf("\e[?25h");
 
     */
-    printf("\e[?25l");
+    printf("\033[?25l");
     PlaySound(TEXT("./tada.wav"), NULL, SND_ASYNC);
     
 
@@ -94,12 +93,13 @@ int main(){
     while(1){
         myState.userInput = 0;
         myState.frame = framesindex;
-        printf("Score: %d\n", myState.score);
+        printf("\033[31;1;52mScore: \033[0m");
+        printf("\033[31;42m%d\n\033[0m", myState.score);
         display(frontBuffer, ROWS, COLS);
         if(kbhit()){
            myState.userInput =  getch();
         }
-        if((framesindex % 8) == 0){
+        if((framesindex % ENEMY_SPEED) == 0){
             myState.mode = GAME_MODE;
         }else{
             myState.mode = PLAYER_MODE;
@@ -222,6 +222,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                 case ENEMY_2:
                     if(frontBuffer[y+1][x] == PLAYER_BULLET){
                         currentSelection = ENEMY_1;
+                        printf("\a");
                         state->score += y;
                         frontBuffer[y+1][x] = ' ';
                     }
@@ -230,6 +231,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                 case ENEMY_1:
                     if(frontBuffer[y+1][x] == PLAYER_BULLET){
                         state->score += y/2;
+                        printf("\a");
                         currentSelection = ENEMY_0;
                         frontBuffer[y+1][x] = ' ';
                     }
