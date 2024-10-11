@@ -56,6 +56,11 @@ int main(){
     char direction;
     struct tableMember* currentPosition = lookup("AAA");
     int i = 0, steps = 0;
+    /*
+        While we are not at dest (ZZZ), update the currentPosition according to direction[i++]
+        where i++ is always in range of the patternLength using the % operator.
+    */
+    
     while(strcmp(currentPosition->current, dest) != 0){
         direction = *(leftRightPattern + i++);
         //printf("Currently at %s, going %c\n", currentPosition->current, direction);
