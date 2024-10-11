@@ -167,9 +167,9 @@ struct tablemember *install(char *word){
         if(memberPtr == NULL ){
             return NULL;
         }
-        hashtable[hashval] = memberPtr;
         memberPtr->value = atoi(word);
-        memberPtr->next = NULL;
+        memberPtr->next = hashtable[hashval];
+        hashtable[hashval] = memberPtr;
     }
 
     return memberPtr;
