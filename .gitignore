@@ -1,4 +1,5 @@
 *.exe
+*.wav
 *.s
 key.txt
 key2.txt
@@ -7,3 +8,5 @@ test.txt
 *.png
 ignore
 Projects/gameoflife/liux-gameoflife
+"Data structures"
+
