@@ -17,7 +17,7 @@
 
 /*
     CARDS:
-        A-K-Q-J-T-9,8,7,6,5,4,3,2
+        A-K-Q-T-9,8,7,6,5,4,3,2,J
         H                       L
 
     TYPES:
@@ -220,7 +220,7 @@ int get_hand_type(char *hand){
 
     /*
     
-        This 2D array takes [max][nUnique] and returns a number between 0-7 based on the hand type.
+        This 2D array takes [max][nUnique] and returns a number between 0-6 based on the hand type.
     
     */
 
