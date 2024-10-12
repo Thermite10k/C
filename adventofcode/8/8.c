@@ -169,8 +169,8 @@ long long lcm(const long long numbers[], int count){
 }
 
 long long gcf(long long n1, long long n2){
-
-    // while(n1 != n2){
+    //                     // one is divisable by the other.
+    // while(n1 != n2 || ((n1 > n2 && n1%n2 == 0) || (n2 > n1 && n2%n1 == 0))){
     //     if(n1 > n2){
     //         n1 -= n2;
     //     }else{
@@ -178,7 +178,7 @@ long long gcf(long long n1, long long n2){
     //     }
     // }
 
-    // return n1;
+    //return (n1 > n2 ? n1 : n2);
     long long temp;
     while(n2 != 0){
         temp = n2;
