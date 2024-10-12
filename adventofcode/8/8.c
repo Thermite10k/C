@@ -35,10 +35,9 @@ int main(){
     char from[MAX_LINE];
     char right[MAX_LINE];
     char left[MAX_LINE];
-    int endWithA = 0;
 
-    char **positionsArray = (char **)calloc(6, sizeof(char *));
-    int positionsIndex = 0;
+    int stratWithACount = 0;
+    char** positionsArray = (char **)calloc(10, sizeof(char *));
 
     //BBB = (DDD, EEE)
     /*
@@ -47,23 +46,22 @@ int main(){
     char* mapPattern = "%[^ ] = (%[^,], %[^)])";
     patternLength = get_f_line(PATTERN_LENGTH, leftRightPattern, fp) - 1; // -1 because we don't count the \0
     printf("%s\n", leftRightPattern);
-
     while((lineLen = get_f_line(MAX_LINE, line, fp)) != 0){
         //printf("%s\t%d", line, lineLen-1);
         matches = sscanf(line, mapPattern, from, left, right);
         if(matches == 3){
             install(from, left, right);
             if(from[2] == 'A'){
-                *(positionsArray + positionsIndex++) = strdup(from);
+                positionsArray[stratWithACount++] = strdup(from);
             }
         }
-        //matches == 3 && printf("From: %s Right: %s Left: %s\n", from, right, left);
     }
-    printf("End with A: %d\n", positionsIndex);
-    // while(positionsIndex--){
-    //     printf("%s\n", *(positionsArray+positionsIndex));
-    // }
-    // printf("all at dest: %d\n", all_at_dest(positionsArray, 6));
+    printf("End with A: %d\tptr len: %d\n", stratWithACount,patternLength);
+    
+    for(int index = 0; index < stratWithACount; index++){
+        printf("%s\n", positionsArray[index]);
+    }
+
     char direction;
     struct tableMember* currentPosition = lookup("AAA");
     int i = 0;
@@ -74,35 +72,36 @@ int main(){
         While we are not at dest (ZZZ), update the currentPosition according to direction[i++]
         where i++ is always in range of the patternLength using the % operator.
     */
-         for(int at = 0; at < positionsIndex; at++){
-            printf("%s\n", *(positionsArray + at));            
-        }
-        printf("\n");
- 
-    while(!all_at_dest(positionsArray, positionsIndex)){
-        direction = *(leftRightPattern + i++);
 
-        //putchar(direction);
-
-        for(positions = 0; positions < positionsIndex; positions++){
-            strcpy(currentlyAt,(*(positionsArray + positions)));
-            //printf("%s\n", currentlyAt);
-            if(direction == 'R'){
-                free(*(positionsArray + positions));
-                *(positionsArray + positions) = strdup(lookup(currentlyAt)->R);
-            }else if(direction == 'L'){
-                free(*(positionsArray + positions));
-                *(positionsArray + positions) = strdup(lookup(currentlyAt)->L);
+    int loop = 1;
+    while(loop){
+        loop = 0;
+        direction = leftRightPattern[i++];
+        
+        for(int posIndex = 0; posIndex < stratWithACount; posIndex++){
+            strcpy(currentlyAt, positionsArray[posIndex]);
+            free(positionsArray[posIndex]);
+            if(direction == 'L'){
+                positionsArray[posIndex] = strdup(lookup(currentlyAt)->L);
+            }else if(direction == 'R'){
+                positionsArray[posIndex] = strdup(lookup(currentlyAt)->R);
+            }
+            if(positionsArray[posIndex][2] != 'Z'){
+                loop = 1;
             }
         }
-            
-        // for(int at = 0; at < positionsIndex; at++){
-        //     printf("%s\n", *(positionsArray + at));            
-        // }
-        // printf("\n");
-       
+
+        // printf("%c\n", direction);
+        // for(int index = 0; index < stratWithACount; index++){
+        //     printf("%s\n", positionsArray[index]);
+        //  }
+
+        //  putchar('\n');
+
+  
         steps++;
         i = i%patternLength;
+   
     }
     printf("Steps: %lld\n", steps);
     return 0;
