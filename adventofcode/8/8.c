@@ -20,8 +20,9 @@ struct tableMember* lookup(char* current);
 struct tableMember* install(char* current, char* L, char* R);
 unsigned hash(char* current);
 int get_f_line(int limit, char* line, FILE* fp);
-// check whether all <count> positions end with Z, if yes, ret 1 :
-int all_at_dest(char** positions, int count);
+
+long long lcm(const long long numbers[], int length);
+long long gcf(long long n1, long long n2);
 
 
 int main(){
@@ -37,7 +38,8 @@ int main(){
     char left[MAX_LINE];
 
     int stratWithACount = 0;
-    char** positionsArray = (char **)calloc(10, sizeof(char *));
+    char** positionsArray = (char **)calloc(6, sizeof(char *));
+    long long answers[6];
 
     //BBB = (DDD, EEE)
     /*
@@ -57,10 +59,7 @@ int main(){
         }
     }
     printf("End with A: %d\tptr len: %d\n", stratWithACount,patternLength);
-    
-    for(int index = 0; index < stratWithACount; index++){
-        printf("%s\n", positionsArray[index]);
-    }
+
 
     char direction;
     struct tableMember* currentPosition = lookup("AAA");
@@ -69,41 +68,32 @@ int main(){
     int positions = 0;
     char currentlyAt[4];
     /*
-        While we are not at dest (ZZZ), update the currentPosition according to direction[i++]
-        where i++ is always in range of the patternLength using the % operator.
+        for each starting position (positions) find the required steps, then find the LCM of all
     */
 
-    int loop = 1;
-    while(loop){
-        loop = 0;
-        direction = leftRightPattern[i++];
-        
-        for(int posIndex = 0; posIndex < stratWithACount; posIndex++){
-            strcpy(currentlyAt, positionsArray[posIndex]);
-            free(positionsArray[posIndex]);
+    for(positions = 0, i = 0, steps = 0; positions < stratWithACount; positions++){
+        steps = 0;
+        i = 0;
+        strcpy(currentlyAt, positionsArray[positions]);
+        while(currentlyAt[2] != 'Z'){ // this is the destination checking
+            direction = leftRightPattern[i++];
             if(direction == 'L'){
-                positionsArray[posIndex] = strdup(lookup(currentlyAt)->L);
+                strcpy(currentlyAt, lookup(currentlyAt)->L);
             }else if(direction == 'R'){
-                positionsArray[posIndex] = strdup(lookup(currentlyAt)->R);
+                strcpy(currentlyAt, lookup(currentlyAt)->R);
             }
-            if(positionsArray[posIndex][2] != 'Z'){
-                loop = 1;
-            }
+            i = i % patternLength;
+            steps++;
         }
-
-        // printf("%c\n", direction);
-        // for(int index = 0; index < stratWithACount; index++){
-        //     printf("%s\n", positionsArray[index]);
-        //  }
-
-        //  putchar('\n');
+        answers[positions] = steps;
+    }
 
   
-        steps++;
-        i = i%patternLength;
-   
-    }
-    printf("Steps: %lld\n", steps);
+    printf("%lld\n", lcm(answers, positions));
+
+    
+
+
     return 0;
 }
 
@@ -166,16 +156,27 @@ int get_f_line(int limit, char* line, FILE* fp){
     return i;
 }
 
-// check whether all <count> positions end with Z, if yes, ret 1 :
-int all_at_dest(char** positions, int count){
 
-    while(count--){
-        // gets the third character of each position and compares it with Z
-        if(*(*(positions + count) + 2) != 'Z'){
-            return 0;
+long long lcm(const long long numbers[], int count){
+    
+    long long answer = 1, n1 = 0, n2 = 0;
+    int i = 0, j = 0;
+
+    for(i = 0; i < count; i++){
+        answer = answer * numbers[i] / gcf(answer , numbers[i]);
+    }
+    return answer;
+}
+
+long long gcf(long long n1, long long n2){
+
+    while(n1 != n2){
+        if(n1 > n2){
+            n1 -= n2;
+        }else{
+            n2 -= n1;
         }
     }
 
-    return 1;
-
+    return n1;
 }
