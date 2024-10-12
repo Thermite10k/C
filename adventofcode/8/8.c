@@ -170,13 +170,20 @@ long long lcm(const long long numbers[], int count){
 
 long long gcf(long long n1, long long n2){
 
-    while(n1 != n2){
-        if(n1 > n2){
-            n1 -= n2;
-        }else{
-            n2 -= n1;
-        }
-    }
+    // while(n1 != n2){
+    //     if(n1 > n2){
+    //         n1 -= n2;
+    //     }else{
+    //         n2 -= n1;
+    //     }
+    // }
 
+    // return n1;
+    long long temp;
+    while(n2 != 0){
+        temp = n2;
+        n2 = n1%n2;
+        n1 = temp;
+    }
     return n1;
 }
