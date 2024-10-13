@@ -19,6 +19,7 @@ struct tableMember* hashTable[TABLE_SIZE];
 struct tableMember* lookup(char* current);
 struct tableMember* install(char* current, char* L, char* R);
 unsigned hash(char* current);
+
 int get_f_line(int limit, char* line, FILE* fp);
 
 long long lcm(const long long numbers[], int length);
@@ -46,7 +47,7 @@ int main(){
         %[^X]X => anything until X, excluding X.
     */
     char* mapPattern = "%[^ ] = (%[^,], %[^)])";
-    patternLength = get_f_line(PATTERN_LENGTH, leftRightPattern, fp) - 1; // -1 because we don't count the \0
+    patternLength = get_f_line(PATTERN_LENGTH, leftRightPattern, fp) - 1; // -1 because we don't need to count the \0
     printf("%s\n", leftRightPattern);
     while((lineLen = get_f_line(MAX_LINE, line, fp)) != 0){
         //printf("%s\t%d", line, lineLen-1);
@@ -58,8 +59,7 @@ int main(){
             }
         }
     }
-    printf("End with A: %d\tptr len: %d\n", stratWithACount,patternLength);
-
+    printf("Positions ending in A: %d\tPattern length: %d\n", stratWithACount,patternLength);
 
     char direction;
     struct tableMember* currentPosition = lookup("AAA");
@@ -67,6 +67,7 @@ int main(){
     long long steps = 0;
     int positions = 0;
     char currentlyAt[4];
+
     /*
         for each starting position (positions) find the required steps, then find the LCM of all
     */
@@ -88,11 +89,7 @@ int main(){
         answers[positions] = steps;
     }
 
-  
     printf("%lld\n", lcm(answers, positions));
-
-    
-
 
     return 0;
 }
@@ -112,6 +109,7 @@ struct tableMember* lookup(char* current){
 
     return NULL;
 }
+
 struct tableMember* install(char* current, char* L, char* R){
     unsigned hashVal = hash(current);
     struct tableMember* tableItem = lookup(current);
@@ -126,10 +124,10 @@ struct tableMember* install(char* current, char* L, char* R){
         tableItem->L = strdup(L);
         tableItem->next = hashTable[hashVal];
         hashTable[hashVal] = tableItem;
-        
     }
     return tableItem;
 }
+
 unsigned hash(char* current){
     unsigned hashVal = 0;
     int i = 4; // just a random number.
@@ -138,8 +136,8 @@ unsigned hash(char* current){
         i = *(current-1)+1;
     }
     return hashVal % TABLE_SIZE;
-    
 }
+
 int get_f_line(int limit, char* line, FILE* fp){
     char c;
     char* w = line;
@@ -155,7 +153,6 @@ int get_f_line(int limit, char* line, FILE* fp){
 
     return i;
 }
-
 
 long long lcm(const long long numbers[], int count){
     
