@@ -3,6 +3,7 @@
 #include <string.h>
 #include <windows.h>
 #include <conio.h>
+#include "CCL.h"
 
 #define ROWS 15
 #define COLS 80
@@ -111,17 +112,20 @@ int main(){
         swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
         
         framesindex = (framesindex + 1) % frames;
+       
     }
-
     return 0;
 }
 void display(int (*array)[TOTAL_COLS], int rows, int cols){
     int y = 0, x = 0;
-    for(y = 0; y < rows; y++){
-        for(x = 0; x <= cols; x++){
-            putchar(array[y][x]);
+    COLOR_PRINT(FG_BLUE, BG_GREEN){
+
+        for(y = 0; y < rows; y++){
+            for(x = 0; x <= cols; x++){
+                putchar(array[y][x]);
+            }
+            putchar('\n');
         }
-        putchar('\n');
     }
 }
 void initialize_char_pointer_array(int (*array)[TOTAL_COLS], int rows, int cols, ...){
