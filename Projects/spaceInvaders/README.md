@@ -1,1 +1,1 @@
-To compile: cc main.c -o spaceInvaders -lwinmm
+To compile: cc main.c CCL.h -o spaceInvaders -lwinmm
