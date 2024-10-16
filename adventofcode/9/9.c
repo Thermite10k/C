@@ -7,46 +7,44 @@
 #define MAX_LINE 1000
 #define CHAR_BUFF_SIZE 100
 
-int get_f_word(int limit, int* word, FILE* fp);
-int get_l_word(int limit, int* word, char **line);
+int get_f_word(int limit, char* word, FILE* fp);
+int get_l_number(int limit, char* word, char **line);
 int get_f_line(int limit, char *line, FILE* fp);
 int get_f_char(FILE* fp);
 void unget_f_char(int c);
 int get_next_val(int* dataArray, int length);
+int get_first_val(int* dataArray, int length);
 int* get_difference(int* dataArray, int length);
+int has_non_zero(int* numbers, int length);
 
 int main(){
 
-    int word[MAX_WORD];
+    char word[MAX_WORD];
     char line[MAX_LINE];
+    char* linePTR = line;
     FILE* fp = fopen(KEY, "r");
-    printf("%c", get_f_char(fp));
+    int lineNumbers[100]; // we expect to have 100 numbers for each line at most.
+    int i = 0; // the index used for lineNumbers
+    int ans = 0;
+
     while(get_f_line(MAX_LINE, line, fp) != EOF){
-        printf("%s", line);
+        linePTR = line;
+        i = 0;
+        while(get_l_number(MAX_WORD, word, &linePTR) != '\0'){
+            lineNumbers[i++] = atoi(word);
+        }
+        
+        ans += get_first_val(lineNumbers, i-1);
+
     }
-
-    int numbers[] = {0, 3, 6, 9, 12, 15};
-    int numbers2[] = {1, 1, 1, 1};
-    printf("\n%d", get_next_val(numbers, 6));
-
-    // int* differenceOfNumbers = get_difference(numbers, 4);
-    // putchar('\n');
-    // for(int i = 0; i < 3; i++){
-    //     printf("%d - ",*(differenceOfNumbers + i));
-    // }
-
-    
-
-
-
-    
+    printf("%d", ans);
 
     return 0;
 }
 
-int get_f_word(int limit, int *word, FILE* fp){
+int get_f_word(int limit, char *word, FILE* fp){
     
-    int *w = word;
+    char *w = word;
     int c;
 
     while(((c = get_f_char(fp)) == ' ')){
@@ -70,8 +68,26 @@ int get_f_word(int limit, int *word, FILE* fp){
     return *word;
     
 }
-int get_l_word(int limit, int* word, char **line){
-    // I'll add this tomorrow...
+int get_l_number(int limit, char* word, char **line){
+    int c;
+    char* w = word;
+    while((c = *(*line)++) == ' '){
+        ;
+    }
+    if(c != EOF){
+        *w++ = c;
+    }
+    if(c == '\0' || c == '\n'){ // adding !isalnum(c) to the conditions prevents us to get the negative numbers
+        *w = '\0';
+        return c;
+    }
+    for(; --limit > 0; (*line)++, w++){
+        if(!isalnum((*w = **line))){
+            break;
+        }
+    }
+    *w = '\0';
+    return word[0];
 }
 
 int get_f_line(int limit, char *line, FILE* fp){
@@ -116,13 +132,30 @@ int get_next_val(int dataArray[], int length){
     int* diffArray;
     diffArray = get_difference(dataArray, length);
 
-    if(*(diffArray) != 0){
+
+    if(has_non_zero(diffArray, length-1)){
         ans += get_next_val(diffArray, length-1);
     }
     free(diffArray);
     return ans + dataArray[length - 1];
     
 }
+
+int get_first_val(int dataArray[], int length){
+    if(length <= 1){
+        return 0;
+    }
+    int ans = 0;
+    int *diffArray;
+    diffArray = get_difference(dataArray, length - 1);
+
+    if(has_non_zero(diffArray, length-1)){
+        ans -= get_first_val(diffArray, length-1);
+    }
+    free(diffArray);
+    return ans + dataArray[0];
+}
+
 int* get_difference(int* dataArray, int length){
     if(length <= 1){
         return NULL;
@@ -143,4 +176,14 @@ int* get_difference(int* dataArray, int length){
     //     *diffPTR++ = *second++ - *first++;
     // }
     return diffArray;
+}
+
+int has_non_zero(int* numbers, int length){
+    int i = 0;
+    for(i = 0; i < length; i++){
+        if(numbers[i] != 0){
+            return 1;
+        }
+    }
+    return 0;
 }
