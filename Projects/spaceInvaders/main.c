@@ -44,6 +44,7 @@ struct gameState {
         int userInput;
         int frame;
         int mode;
+        int isRunning;
     };
 void display(int (*array)[TOTAL_COLS], int rows, int cols);
 
@@ -71,7 +72,8 @@ int main(){
     .score = 0,
     .userInput = 0,
     .frame = 0,
-    .mode = GAME_MODE
+    .mode = GAME_MODE,
+    .isRunning = 1
     };
     /*
     
@@ -89,9 +91,14 @@ int main(){
     setup_front_buffer(frontBuffer, ROWS, COLS);
     long frames = 10000000;
     long framesindex = 0;
+
+    COLOR_PRINT(BG_BLACK, FG_PURPLE){
+        printf("Press 'q' to quit.\n");
+    }
+    
     
 
-    while(1){
+    while(myState.isRunning == 1){
         myState.userInput = 0;
         myState.frame = framesindex;
         printf("\033[31;1;52mScore: \033[0m");
@@ -99,6 +106,10 @@ int main(){
         display(frontBuffer, ROWS, COLS);
         if(kbhit()){
            myState.userInput =  getch();
+           switch(myState.userInput){
+            case 'q':
+                myState.isRunning = 0;
+           }
         }
         if((framesindex % ENEMY_SPEED) == 0){
             myState.mode = GAME_MODE;
