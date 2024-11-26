@@ -112,6 +112,7 @@ int main(){
             switch(myState.userInput){
                 case 'q':
                     myState.isRunning = 0;
+                    printf("\e[1;1H\e[2J"); // clear the screen.
             }
             }
             if((framesindex % ENEMY_SPEED) == 0){
