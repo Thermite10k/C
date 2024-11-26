@@ -45,6 +45,7 @@ struct gameState {
         int frame;
         int mode;
         int isRunning;
+        int isInGame;
     };
 void display(int (*array)[TOTAL_COLS], int rows, int cols);
 
@@ -73,7 +74,8 @@ int main(){
     .userInput = 0,
     .frame = 0,
     .mode = GAME_MODE,
-    .isRunning = 1
+    .isRunning = 1,
+    .isInGame = 0
     };
     /*
     
@@ -92,37 +94,55 @@ int main(){
     long frames = 10000000;
     long framesindex = 0;
 
-    COLOR_PRINT(BG_BLACK, FG_PURPLE){
-        printf("Press 'q' to quit.\n");
-    }
     
     
 
     while(myState.isRunning == 1){
-        myState.userInput = 0;
-        myState.frame = framesindex;
-        printf("\033[31;1;52mScore: \033[0m");
-        printf("\033[31;42m%d\n\033[0m", myState.score);
-        display(frontBuffer, ROWS, COLS);
-        if(kbhit()){
-           myState.userInput =  getch();
-           switch(myState.userInput){
-            case 'q':
-                myState.isRunning = 0;
-           }
-        }
-        if((framesindex % ENEMY_SPEED) == 0){
-            myState.mode = GAME_MODE;
+        if(myState.isInGame){
+            COLOR_PRINT(BG_BLACK, FG_PURPLE){
+                printf("Press 'q' to quit.\n");
+            }
+            myState.userInput = 0;
+            myState.frame = framesindex;
+            printf("\033[31;1;52mScore: \033[0m");
+            printf("\033[31;42m%d\n\033[0m", myState.score);
+            display(frontBuffer, ROWS, COLS);
+            if(kbhit()){
+            myState.userInput =  getch();
+            switch(myState.userInput){
+                case 'q':
+                    myState.isRunning = 0;
+            }
+            }
+            if((framesindex % ENEMY_SPEED) == 0){
+                myState.mode = GAME_MODE;
+            }else{
+                myState.mode = PLAYER_MODE;
+            }
+            update_game_state(backBuffer, frontBuffer, ROWS, COLS, &myState);
+            printf("\033[%dA\033[%dD", ROWS+2, TOTAL_COLS); // ROWS+2 to account for the "score:" line and press 'q' to quit line.
+            
+            // I use this function do have more flexibility than memcpy
+            swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
+            
+            framesindex = (framesindex + 1) % frames;
         }else{
-            myState.mode = PLAYER_MODE;
+            COLOR_PRINT(BG_BLACK, FG_PURPLE){
+                printf("SpaceInvaders!\n");
+                TEXT_EFFECT(BLINK){
+                    printf("Press S to start.");
+                }
+            }
+            if(kbhit()){
+                myState.userInput = getch();
+                if(myState.userInput == 's'){
+                myState.isInGame = 1;
+                printf("\e[1;1H\e[2J"); // clear the screen.
+                }
+            }
+            printf("\033[%dA\033[%dD", 1, 17);
         }
-        update_game_state(backBuffer, frontBuffer, ROWS, COLS, &myState);
-        printf("\033[%dA\033[%dD", ROWS+1, TOTAL_COLS); // ROWS+1 to account for the "score:" line.
-        
-        // I use this function do have more flexibility than memcpy
-        swaparrays(frontBuffer, backBuffer, ROWS, TOTAL_COLS);
-        
-        framesindex = (framesindex + 1) % frames;
+
        
     }
     return 0;
