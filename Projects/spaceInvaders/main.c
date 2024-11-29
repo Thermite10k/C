@@ -197,17 +197,17 @@ void setup_front_buffer(int (*array)[TOTAL_COLS], int rows, int cols){
     int secondThird = firstThird + middle;
     array[2][2] = ENEMY_2;
 
-    array[3][middle] = ENEMY_2;          array[3][middle + 1] = ENEMY_2;          array[3][middle - 1] = ENEMY_2;
-    array[4][middle] = ENEMY_1;          array[4][middle + 1] = ENEMY_1;          array[4][middle - 1] = ENEMY_1;
-                                         array[4][middle + 2] = ENEMY_1;          array[4][middle - 2] = ENEMY_1;
+    // array[3][middle] = ENEMY_2;          array[3][middle + 1] = ENEMY_2;          array[3][middle - 1] = ENEMY_2;
+    // array[4][middle] = ENEMY_1;          array[4][middle + 1] = ENEMY_1;          array[4][middle - 1] = ENEMY_1;
+    //                                      array[4][middle + 2] = ENEMY_1;          array[4][middle - 2] = ENEMY_1;
     
-    array[4][firstThird] = ENEMY_2;      array[4][firstThird + 1] = ENEMY_2;      array[4][firstThird - 1] = ENEMY_2;
-    array[5][firstThird] = ENEMY_1;      array[5][firstThird + 1] = ENEMY_1;      array[5][firstThird - 1] = ENEMY_1;
-                                         array[5][firstThird + 2] = ENEMY_1;      array[5][firstThird - 2] = ENEMY_1;
+    // array[4][firstThird] = ENEMY_2;      array[4][firstThird + 1] = ENEMY_2;      array[4][firstThird - 1] = ENEMY_2;
+    // array[5][firstThird] = ENEMY_1;      array[5][firstThird + 1] = ENEMY_1;      array[5][firstThird - 1] = ENEMY_1;
+    //                                      array[5][firstThird + 2] = ENEMY_1;      array[5][firstThird - 2] = ENEMY_1;
 
-    array[4][secondThird] = ENEMY_2;     array[4][secondThird + 1] = ENEMY_2;     array[4][secondThird - 1] = ENEMY_2;
-    array[5][secondThird] = ENEMY_1;     array[5][secondThird + 1] = ENEMY_1;     array[5][secondThird - 1] = ENEMY_1;
-                                         array[5][secondThird + 2] = ENEMY_1;     array[5][secondThird - 2] = ENEMY_1;                                     
+    // array[4][secondThird] = ENEMY_2;     array[4][secondThird + 1] = ENEMY_2;     array[4][secondThird - 1] = ENEMY_2;
+    // array[5][secondThird] = ENEMY_1;     array[5][secondThird + 1] = ENEMY_1;     array[5][secondThird - 1] = ENEMY_1;
+    //                                      array[5][secondThird + 2] = ENEMY_1;     array[5][secondThird - 2] = ENEMY_1;                                     
 
     array[rows-2][middle] = PLAYER_SHIP;
 }
@@ -221,6 +221,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
     int currentSelection;
     int x = 0, y = 0;
     int bulletCount = 0;
+    int enemiesCount = 0;
     int kbEvent = state->userInput;
     dy = state->frame % ENV_DESCENT_RATE ? 0 : 1;
 
@@ -256,6 +257,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
             currentSelection = frontBuffer[y][x];
             switch(currentSelection){
                 case ENEMY_2:
+                    enemiesCount++;
                     if(frontBuffer[y+1][x] == PLAYER_BULLET){
                         currentSelection = ENEMY_1;
                         printf("\a");
@@ -265,6 +267,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                     backBuffer[y + dy][x + dx] = currentSelection;
                     break;
                 case ENEMY_1:
+                    enemiesCount++;
                     if(frontBuffer[y+1][x] == PLAYER_BULLET){
                         state->score += y/2;
                         printf("\a");
@@ -279,6 +282,9 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                     break;
                 
                 case PLAYER_SHIP:
+                    if(enemiesCount == 0){
+                        state->isInGame = 0;
+                    }
                     if(kbEvent == RIGHT){
                   
                         if(x < COLS - 2){ // m cols, m-1 is the wall, m-2 is the last valid space
