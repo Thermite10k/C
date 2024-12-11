@@ -223,6 +223,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
     int bulletCount = 0;
     int enemiesCount = 0;
     int kbEvent = state->userInput;
+    int lastEnemyY = 0; // the last y at which an enemy was seen
     dy = state->frame % ENV_DESCENT_RATE ? 0 : 1;
 
     for(y = 0; y < rows; y++){
@@ -255,6 +256,9 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
         backBuffer[y][cols] = Vx;
         for(x = 0; x < cols; x++){
             currentSelection = frontBuffer[y][x];
+            if(currentSelection == ENEMY_1 || currentSelection == ENEMY_2){
+                lastEnemyY = y; // to be tested, the plane is landing.
+            }
             switch(currentSelection){
                 case ENEMY_2:
                     enemiesCount++;
@@ -283,7 +287,7 @@ void update_game_state(int (*backBuffer)[TOTAL_COLS], int (*frontBuffer)[TOTAL_C
                 
                 case PLAYER_SHIP:
                     if(enemiesCount == 0){
-                        state->isInGame = 0;
+                        state->isInGame = 0; // if we reach the player without seeing any enemies, the game is over, we have won!
                     }
                     if(kbEvent == RIGHT){
                   
