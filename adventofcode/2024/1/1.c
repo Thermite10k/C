@@ -5,6 +5,14 @@
 #define KEY "key.txt"
 #define MAX_WORD 100
 #define CHAR_BUFF_SIZE 100
+#define TABLE_SIZE 1000
+
+struct tableMember {
+    int value;
+    int count;
+
+    struct tableMember* next;
+};
 
 struct tNode {
     struct tNode* right;
@@ -12,6 +20,12 @@ struct tNode {
 
     int value;
 };
+
+struct tableMember* hashTable[TABLE_SIZE];
+
+struct tableMember* lookup(int value);
+struct tableMember* install(int value);
+
 
 char get_f_char(FILE* fp);
 void unget_f_char(char c);
@@ -35,12 +49,15 @@ int main(int argc, char* argv){
 
     struct tNode* firstTree = NULL;
     struct tNode* secondTree = NULL;
+    int secondValue = 0;
 
     while(get_f_word(MAX_WORD, word, fp) != EOF){
         size++;        
         firstTree = add_to_tree(my_atoi(word), firstTree);
         get_f_word(MAX_WORD, word, fp);
-        secondTree = add_to_tree(my_atoi(word), secondTree);
+        secondValue = my_atoi(word);
+        install(secondValue);
+        secondTree = add_to_tree(secondValue, secondTree);
     }
     printf("size is: %d\n", size);
     int firstArr[size];
@@ -56,15 +73,22 @@ int main(int argc, char* argv){
     add_tree_to_array(firstTree, firstArr, &index);
     index = 0;
     int sumDifference = 0;
+    int secondAnswer = 0;
+    int similarityScore = 0;
+    struct tableMember* similarityScoreItem;
     add_tree_to_array(secondTree, secondArr, &index);
      for(int i = 0; i < size; i++){
         sumDifference += (firstArr[i] - secondArr[i]) >= 0 ? firstArr[i] - secondArr[i] : secondArr[i] - firstArr[i];
+        similarityScoreItem = lookup(firstArr[i]);
+        if(similarityScoreItem){
+            similarityScore = lookup(firstArr[i])->count;
+            secondAnswer = secondAnswer + firstArr[i] * (similarityScore);
+        }
+        
     }
 
-    printf("%d", sumDifference);
-    
-    
-    //addTreeToArray(secondTree, secondArrPtr);
+    printf("answer to part I:\t%09d\n", sumDifference);
+    printf("answer to part II:\t%09d", secondAnswer);
 
     return 0;
 }
@@ -179,4 +203,38 @@ void add_tree_to_array(struct tNode* root, int* array, int* index){
         (*index)++;
         add_tree_to_array(root->right, array, index);
     }
+}
+struct tableMember* install(int value){
+   
+    int hashVal = value%TABLE_SIZE;
+    struct tableMember* tableItem;
+    tableItem = lookup(value);
+
+    if(tableItem == NULL){
+        tableItem = (struct tableMember *) malloc(sizeof(*tableItem));
+        if(tableItem == NULL){
+            return NULL;
+        }
+        tableItem->value = value;
+        tableItem->count = 1;
+        tableItem->next = hashTable[hashVal];
+        hashTable[hashVal] = tableItem;
+    }else{
+        tableItem->count++;
+    }
+
+    return tableItem;
+}
+struct tableMember* lookup(int value){
+    
+    struct tableMember* tableItem;
+    tableItem = hashTable[value%TABLE_SIZE];
+
+    for(tableItem; tableItem != NULL; tableItem = tableItem->next){
+        if(tableItem->value == value){
+            return tableItem;
+        }
+    }
+
+    return NULL;
 }
