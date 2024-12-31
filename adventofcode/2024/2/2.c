@@ -146,6 +146,7 @@ int check_for_safety(int* numbers, int count){
                 return 1;
             }
         }
+        
         difference = number2 - number1;
         difference = difference > 0 ? difference : -1 * difference; // getting abs(difference)
         rate = (number2 - number1) > 0 ? 1 : -1;
@@ -160,6 +161,7 @@ int check_for_safety(int* numbers, int count){
             
             dampner = 1;
             number2 = numbers[i+2];
+            i++;
             difference = number2 - number1;
             difference = difference > 0 ? difference : -1 * difference; // getting abs(difference)
             rate = (number2 - number1) > 0 ? 1 : -1;
@@ -171,13 +173,24 @@ int check_for_safety(int* numbers, int count){
             }
             
             if(rate != lastRate || difference > 3 || difference < 1){
-                return 0;                
+                i--;
+                number2 = numbers[i+1];
+                number1 = numbers[i-1];
+                difference = number2 - number1;
+                difference = difference > 0 ? difference : -1 * difference; // getting abs(difference)
+                rate = (number2 - number1) > 0 ? 1 : -1;
+                if(i == 1){
+                    lastRate = rate;
+                }
+                if(rate != lastRate || difference > 3 || difference <1){
+                    return 0;
+                }
             }
            printf("Will remove %d\n", numbers[i]);
         }
-           if(!dampner){
-            lastRate = rate;
-           }
+           
+           
+           
             
         
     }
