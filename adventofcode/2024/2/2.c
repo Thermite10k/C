@@ -17,11 +17,11 @@ int get_f_line(int limit, char* line, FILE* fp);
 int get_l_word(int limit, char* word, char** line);
 
 int check_for_safety(int* numbers, int count);
-
+int is_safe_entry(int numbers[], int count);
 
 int main(){
 
-    FILE* fp = fopen(KEY_2, "r");
+    FILE* fp = fopen(KEY, "r");
 
     char line[MAX_LINE];
     char word[MAX_LINE];
@@ -38,9 +38,10 @@ int main(){
             while(i < MAX_NUMBERS && get_l_word(MAX_LINE, word, &linePtr) != '\0'){
                 lineNumbers[i++] = atoi(word);
             }
-            printf("Entry: %s is %d\n", line, check_for_safety(lineNumbers, i));
-            // safeCount += check_for_safety(lineNumbers, i);
+            // printf("Entry: %s is %d\n", line, check_for_safety(lineNumbers, i));
+            safeCount += check_for_safety(lineNumbers, i);
         }
+ 
     printf("Safe entries: %d\n", safeCount);
     return 0;
 }
@@ -113,6 +114,8 @@ int get_l_word(int limit, char* word, char** line){
 }
 int check_for_safety(int* numbers, int count){
     int lastRate = 0;
+    // rates[0] = decreasing. rates[1] = increasing
+    int rates[] = {0, 0};
     int rate = 0;
     int i = 0;
     int number1 = 0, number2 = 0;
@@ -122,17 +125,24 @@ int check_for_safety(int* numbers, int count){
             fprintf(stderr, "Can not check safety if count is < 3, count: %s\n", count);
             return 0;
         }
-    lastRate = (numbers[i+1] - numbers[i]) > 0 ? 1 : -1; // rate is either positive or negative.
-    for(i; i < count-1; i++){
-        // 1 3 6 7 9
+    for(i=0; i < count-1; i++){
+        number1 = numbers[i];
+        number2 = numbers[i+1];
+        (number2 - number1) > 0 ? rates[1]++ : rates[0]++;
+
+    }
+
+    lastRate = rates[1] > rates[0] ? 1 : -1;
+    //lastRate = (numbers[count-1] - numbers[0]) > 0 ? 1 : -1; // rate is either positive or negative.
+    int firstMethod = 0, secondMethod = 0;
+    for(i=0; i < count-1; i++){
+        // 1 2 7 8 9
         number1 = numbers[i];
         number2 = numbers[i+1];
         if(i == 0 && number1 == number2){
             // if the first two data points are equal, ignore them but set dampner to 1.
             printf("Will remove %d\n", numbers[i+1]);
             dampner = 1;
-            // set the new rate as the last one is 0
-            lastRate = (numbers[i+2] - numbers[i]) > 0 ? 1 : -1;
             continue;
         }
         if(i == count-2 && number1 == number2){ // last two numbers
@@ -156,37 +166,41 @@ int check_for_safety(int* numbers, int count){
                 return 0;
             }
             if(i == count - 2){
-                return 1;
-            }
-            
-            dampner = 1;
-            number2 = numbers[i+2];
-            i++;
-            difference = number2 - number1;
-            difference = difference > 0 ? difference : -1 * difference; // getting abs(difference)
-            rate = (number2 - number1) > 0 ? 1 : -1;
-            if(i == 1){
-                /*
-                    If the rate changes during the second iteration, so 5 4 7, the rate is 7-5
-                */
-                lastRate = rate;
-            }
-            
-            if(rate != lastRate || difference > 3 || difference < 1){
-                i--;
-                number2 = numbers[i+1];
                 number1 = numbers[i-1];
+                number2 = numbers[i+1];
                 difference = number2 - number1;
-                difference = difference > 0 ? difference : -1 * difference; // getting abs(difference)
-                rate = (number2 - number1) > 0 ? 1 : -1;
-                if(i == 1){
-                    lastRate = rate;
-                }
-                if(rate != lastRate || difference > 3 || difference <1){
+                difference = difference > 0 ? difference : -1 * difference;
+                if(difference > 3 || difference < 1){
                     return 0;
                 }
             }
-           printf("Will remove %d\n", numbers[i]);
+            
+            number2 = numbers[i+1];
+            number1 = numbers[i-1];
+            difference = number2 - number1;
+            difference = difference > 0 ? difference : -1 * difference; // getting abs(difference)
+            rate = (number2 - number1) > 0 ? 1 : -1;         
+            if(rate != lastRate || difference > 3 || difference < 1){
+                
+                number2 = numbers[i+2];
+                number1 = numbers[i];
+                
+                difference = number2 - number1;
+                difference = difference > 0 ? difference : -1 * difference; // getting abs(difference)
+                rate = (number2 - number1) > 0 ? 1 : -1;
+      
+                if(rate != lastRate || difference > 3 || difference <1){
+                    
+                        return 0;
+                    
+                }else{
+                    i++;
+                }
+            }
+                
+            
+            dampner = 1;
+            printf("Will remove %d\n", numbers[i]);
         }
            
            
@@ -199,6 +213,15 @@ int check_for_safety(int* numbers, int count){
     return 1;
 }
 
-int are_safe_numbers(int n1, int n2){
-    return 0;
+int is_safe_entry(int numbers[], int count){
+    
+    struct stat {
+        int increasing;
+        int decreasing;
+        int differenceViolation;
+    };
+
+    struct stat set_stats = {.increasing = 0, .decreasing = 0, .differenceViolation = 0};
+
+
 }
