@@ -25,7 +25,7 @@ int main(){
     char word[MAX_WORD] ;
 
     FILE* fp;
-    fp = fopen(KEY_2, READ_MODE);
+    fp = fopen(KEY, READ_MODE);
     int i = 0, max_prams = 5;
     char prams[10][10];
     char mulPattern[] = "(%d,%d)";
@@ -104,6 +104,8 @@ int main(){
             printf("%lld\n", totalAnswers[l]);
         }
     }
+
+    printf("dose m!ul have mul? %d", str_end_in_str("mul", "m!ul"));
     
     return 0;
 }
@@ -195,20 +197,22 @@ int str_end_in_str(char* s1, char* s2){ // s2 ends in s1 ? 1 : 0;
     if(i == 0 || j == 0){
         fprintf(stderr, "error: str_end_in_str: s1 or s2 has length of 0\n");
     }
+    if(j > i){
+        return 0;
+    }
     j--;
     i--; // to skip the '\0'
     lenOfS1 = j;
-    while(i >= 0){
+    while(i >= 0 ){
         if(str2[i] == str1[j]){
+            if(j == 0){
+                return 1;
+            }
             j--;
         }else{
             j = lenOfS1;
         }
-        if(j == 0){
-            return 1;
-        }
         i--;
     }
-
     return 0;
 }
