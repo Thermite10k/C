@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include "CCL.h"
 
 #define MAX_LINE 140
 #define CHAR_BUFFER_SIZE 100
 #define KEY "key.txt"
 #define TEST_KEY "key2.txt"
-
+#define TEST_KEY_3 "key3.txt"
 
 int get_f_line(int limit, char* line, FILE* fp);
 int get_f_char(FILE* fp);
@@ -12,22 +13,32 @@ void unget_f_char(char c);
 int has_start(char* line, int lineLength);
 int traverse_loop(char (*tunnele)[MAX_LINE], int startingX, int startingY);
 int initiate_loop(char (*tunnel)[MAX_LINE], int x, int y, int* Vx, int* Vy);
+
 int main(){
+    
     char lines[MAX_LINE][MAX_LINE];
     FILE* fp = fopen(KEY, "r");
     int lineCount = 0;
+    int lineLength = 0;
     int charInLineCount = 0;
     int YofS = -1;
     int XofS = -1;
     int steps = 0;
+    
 //                                                              max_line+2 to account for \n etc
     while(lineCount < MAX_LINE && (charInLineCount = get_f_line(MAX_LINE+2, lines[lineCount++], fp)) > 0){
+        if(lineLength == 0){
+            lineLength = charInLineCount;
+        }
         if(YofS == -1 && (XofS = has_start(lines[lineCount-1], charInLineCount))){   
             YofS = lineCount - 1;
         }
+        printf("%s", lines[lineCount-1]);
     }
-    printf("X: %d\nY: %d\n", XofS, YofS);
+  
+ 
     steps = traverse_loop(lines, XofS, YofS);
+    MOVE_CURSOR_ZERO_ABSOLUTE(lineCount+2, 0);
     printf("Farthest point: %d\n", steps/2);
     return 0;
 
@@ -35,6 +46,7 @@ int main(){
 
 }
 int get_f_line(int limit, char* line, FILE* fp){
+
     int c;
     char* l = line;
     int charCount = 0;
@@ -71,6 +83,7 @@ void unget_f_char(char c){
     }
 }
 int has_start(char* line, int lineLength){
+
     int x = 0;
 
     for(x = 0; x < lineLength; x++){
@@ -79,23 +92,29 @@ int has_start(char* line, int lineLength){
             return x;
         }
     }
-
+    
     return 0;
-
 }
 int traverse_loop(char (*tunnel)[MAX_LINE], int startingX, int startingY){
+
     int steps = 0;
     int currentX = startingX;
     int currentY = startingY;
     int Vx = 0;
     int Vy = 0;
     char currentSelection = 0;
+
+    COLOR_PRINT(BG_PURPLE, FG_BLACK){
     while((currentSelection = tunnel[currentY][currentX]) != 'S' || steps == 0){
-        printf("going to x: %.4d, y: %.4d\n", currentX, currentY);
+        //printf("going to x: %.4d, y: %.4d\n", currentX, currentY);
+        MOVE_CURSOR_ZERO_ABSOLUTE(currentY, currentX);
+        putchar(currentSelection);
         steps++;
         switch(currentSelection){
             case 'S':
-                initiate_loop(tunnel, startingX, startingY, &Vx, &Vy);
+                if(initiate_loop(tunnel, startingX, startingY, &Vx, &Vy) == -1){
+                    return 0;
+                }
                 currentY += Vy;
                 currentX += Vx;
                 break;
@@ -139,7 +158,7 @@ int traverse_loop(char (*tunnel)[MAX_LINE], int startingX, int startingY){
                 currentX += Vx;
                 break;
             case '7':
-                if(Vx == 1){// enter from right
+                if(Vx == 1){// enter from left
                     Vx = 0;
                     Vy = 1;
                 }else if(Vy == -1){// enter from bottom
@@ -153,12 +172,12 @@ int traverse_loop(char (*tunnel)[MAX_LINE], int startingX, int startingY){
             default:
                 printf("Got an unexpected character -%c-\n", currentSelection);
                 break;
-
-
         }
+    }
     }
     return steps;
 }
+
 int initiate_loop(char(*tunnel)[MAX_LINE], int x, int y, int* Vx, int* Vy){
     int dy = -1;
     int dx = -1;
@@ -173,12 +192,12 @@ int initiate_loop(char(*tunnel)[MAX_LINE], int x, int y, int* Vx, int* Vy){
                         return 0;
                     }
                 }
-                if(dy == 0 && dx == -1){
+                if(dy == 0 && dx == -1){// checking left
                     if(current == '-' || current == 'L'){
                         *Vx = dx;
                         return 0;
                     }
-                }else if(dy == 0 && dx == 1){
+                }else if(dy == 0 && dx == 1){// checking right
                     if(current == 'J' || current == '7'){
                         *Vx = dx;
                         return 0;
@@ -187,6 +206,6 @@ int initiate_loop(char(*tunnel)[MAX_LINE], int x, int y, int* Vx, int* Vy){
             }
         }
     }
-    printf("Can not star moving from S!\n");
+    printf("Can not start moving from S, please evaluate line: %d, column: %d\n", y+1, x+1);
     return -1;
 }
