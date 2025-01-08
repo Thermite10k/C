@@ -25,15 +25,16 @@ int main(){
     char word[MAX_WORD] ;
 
     FILE* fp;
-    fp = fopen(KEY_2, READ_MODE);
+    fp = fopen(KEY, READ_MODE);
     int i = 0, max_prams = 5;
     char prams[100][100];
     int pram = 0;
     char mulPattern[] = "(%d,%d)";
     int j = 0; // the counter for mulPattern
-    char c; // used instead of mulPattern[j]
+    int c; // used instead of mulPattern[j]
     int patternLength = strlen(mulPattern);
 
+    int number = 0;
     long long answer = 0;
     long long tempAnswer = 0;
     long long totalAnswers[MAX_LINES];
@@ -43,70 +44,77 @@ int main(){
     }
 
     int status = 0;
-    int isValidMul = 0;
+    int isValidMul = 1;
     int lines = 0;
+    int inPAttern = 0;
+    int doCalculation = 0;
 
     //printf("Len is%d\n", patternLength);
     while((status = get_f_word(fp, MAX_WORD, word)) != EOF){
-        isValidMul = 0;
-        //printf("%s\n", word);
+
         if(status == '\n'){
             lines++;
-            printf("___________________________________________________________\n");
             continue;
         }
-        i = 0;
-        if(str_in_str("mul", word)){
+        printf("%s\n", word);
+        i = 0; // used for word
+        j = 0; // used for pattern
+        if(isValidMul && str_in_str("mul", word)){
             //printf("\t%s\n", word);
-            // if you see a mul, get max_prams next inputs
-            while(i < max_prams && (status = get_f_word(fp, MAX_WORD, word)) != EOF){
-                strcpy(prams[i++], word);
-            }
- 
-            if(i == max_prams){
-                tempAnswer = 1;
+            // if you see a mul, check for a pattern.
+            inPAttern = 1; 
+            tempAnswer = 1;
+            while(inPAttern){
+                if(get_f_word(fp, MAX_WORD, word) == EOF){
+                    inPAttern = 0;
+                    break;
+                }
                 i = 0;
-                j = 0;
-                while((c = mulPattern[j]) != '\0'){
-                    if(c == '%'){
-                        c = mulPattern[++j];
-                        switch(c){
+                while((c = word[i])){
+                    if(c == mulPattern[j]){
+                        i++;
+                    }else if(mulPattern[j] == '%'){
+                        j++;
+                        
+                        switch(mulPattern[j]){
                             case 'd':
-                                pram = atoi(prams[i++]);
-                                if(!(pram / 1000) && pram != 0){
-                                    tempAnswer *= pram;
-                                }else{
-                                    tempAnswer = 0;
-                                    fprintf(stderr, "Invalid prameter of mul instruction: %d\n", pram);
+                                number = 0;
+                                if(isdigit(c)){
+                                    number = 10 * number + c - '0';
+                                    while(isdigit((c = word[++i]))){
+                                        number = 10 * number + c - '0';
+                                    }
+                                   
+                                    tempAnswer *= number;
                                 }
                                 break;
+                               
+
                             default:
                                 fprintf(stderr, "Unknown pattern: %c\n", c);
                                 break;
                         }
-                    }else if(mulPattern[j] == *prams[i]){
-                            i++;
                     }else{
-                        // for(int i3 = 0; i3 < max_prams; i3++){
-                        //     printf("Ungetting %s\n", prams[i3]);
-                        //         unget_f_word(prams[i3]);
-                        //     }
-                            break;
-                        }
-                    
-                    j++;
-                }
-                if(j == patternLength){// && i == max_prams : -> else -> unget_str...
-                    printf("mul");
-                    for(int k = 0; k < i; k++){
-                        printf("%s", prams[k]);
+                        inPAttern = 0;
+                        break;
                     }
-                    printf(" = %lld in line %d\n", tempAnswer, lines);
-                    totalAnswers[lines] += tempAnswer;
-                    answer += tempAnswer;
-                    isValidMul = 1;
+                    j++;
+                    if(j == patternLength){
+                        inPAttern = 0;
+                        answer += tempAnswer;
+                    }
                 }
             }
+
+            
+            
+            
+ 
+            
+        }else if(strcmp(word, "do()") == 0){
+            isValidMul = 1;
+        }else if(strcmp(word, "don't()") == 0){
+            isValidMul = 0;
         }
            
         if(!isValidMul){
@@ -118,11 +126,11 @@ int main(){
     }
     printf("%lld\nin %d lines\n", answer, lines);
 
-    for(int l = 0; l < lines; l++){
-        if(totalAnswers[l]){
-            printf("%lld\n", totalAnswers[l]);
-        }
-    }
+    // for(int l = 0; l < lines; l++){
+    //     if(totalAnswers[l]){
+    //         printf("%lld\n", totalAnswers[l]);
+    //     }
+    // }
 
     //printf("dose m!ul have mul? %d", str_in_str("mul", "m!ul"));
     
