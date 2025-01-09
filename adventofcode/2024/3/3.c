@@ -17,7 +17,7 @@ int get_f_word(FILE* fp, int limit, char* word);
 
 int str_in_str(char* s1, char* s2); // s1 in s2 ? 1 : 0;
 int str_end_in_str(char* s1, char* s2); // s1 ends in s2 ? 1 : 0;
-
+int str_in_stream(char* str, FILE* fp);
 
 
 int main(){
@@ -25,7 +25,7 @@ int main(){
     char word[MAX_WORD] ;
 
     FILE* fp;
-    fp = fopen(KEY, READ_MODE);
+    fp = fopen(KEY_2, READ_MODE);
     int i = 0, max_prams = 5;
     char prams[100][100];
     int pram = 0;
@@ -56,10 +56,12 @@ int main(){
             lines++;
             continue;
         }
+        
         printf("%s\n", word);
+        
         i = 0; // used for word
         j = 0; // used for pattern
-        if(isValidMul && str_in_str("mul", word)){
+        if(isValidMul == 1 && str_in_str("mul", word)){
             //printf("\t%s\n", word);
             // if you see a mul, check for a pattern.
             inPAttern = 1; 
@@ -84,7 +86,7 @@ int main(){
                                     while(isdigit((c = word[++i]))){
                                         number = 10 * number + c - '0';
                                     }
-                                   
+                                  
                                     tempAnswer *= number;
                                 }
                                 break;
@@ -104,21 +106,21 @@ int main(){
                         answer += tempAnswer;
                     }
                 }
+            }    
+        }
+        if(str_end_in_str("do", word)){
+            if(str_in_stream("()", fp)){
+                printf("WE have a DO!\n");
+                isValidMul = 1;
             }
-
-            
-            
-            
- 
-            
-        }else if(strcmp(word, "do()") == 0){
-            isValidMul = 1;
-        }else if(strcmp(word, "don't()") == 0){
-            isValidMul = 0;
+        }if(str_end_in_str("don", word)){
+                printf("WE have a DONT()!\n");    
+            if(str_in_stream("'t()", fp)){
+                isValidMul = 0;
+            }
         }
            
-        if(!isValidMul){
-        }
+  
         if(status == EOF){
             break;
         }
@@ -252,4 +254,60 @@ int str_end_in_str(char* s1, char* s2){ // s2 ends in s1 ? 1 : 0;
         i--;
     }
     return 0;
+}
+int str_in_stream(char* str, FILE* fp){
+
+    int inPAttern = 0;
+    int i = 0, j = 0;
+    int l = 0;
+    int c;
+
+    char stream[20][20];
+    char word[MAX_WORD];
+    int patternLength = strlen(str);
+
+    /*
+
+        Currently concerned with two patterns, can be expanded to any pattern.
+            do + "(" + ")"
+            don + "'" + "t" + "(" + ")"
+
+    */
+
+    i = 0; // used for word
+    j = 0; // used for pattern
+    inPAttern = 1; 
+    int status = 0;
+
+    while(inPAttern){
+        if(get_f_word(fp, MAX_WORD, word) == EOF){
+            inPAttern = 0;
+            printf("EOF!!!!!!!");
+            return EOF;
+            
+        }
+        strcpy(stream[l++], word);
+        //printf("Saving %s\n", stream[l-1]);
+        i = 0;
+        while((c = word[i])){
+            if(c == str[j]){
+                i++;
+            }else{
+                inPAttern = 0;
+                for(int i2 = l-1; i2 >= 0; i2--){
+                    // reverse the string as well!
+                    unget_f_word(stream[i2]);
+                    //printf("---------------%s\n", stream[i2]);
+                }
+                return 0;
+            }
+            j++;
+            if(j == patternLength){
+                return 1;
+            }
+        }
+
+    }
+    return 0;
+
 }
