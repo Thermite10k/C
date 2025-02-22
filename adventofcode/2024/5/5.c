@@ -10,8 +10,8 @@
 #define MAX_WORD 10
 #define MAX_LINE 100
 
-#define UPDATES_PATH "updates2.txt"
-#define ORDERS_PATH "order2.txt"
+#define UPDATES_PATH "updates.txt"
+#define ORDERS_PATH "order.txt"
 
 int get_f_word(FILE* fp, int limit, char *word);
 int get_f_line(FILE* fp, int limit, char *line);
@@ -53,8 +53,39 @@ int main(){
     int currentSetIndex = 0;
     int isLegalSet = 1;
     int sumAnswers = 0;
+    int i = 0;
+    int j = 0;
+    int pageNumber = 0;
+    int temp = 0;
     while((status = get_f_word(fp, MAX_WORD, word)) != EOF){
+        if((pageNumber = atoi(word))){ // ignoring '.'
+            currentSet[currentSetIndex++] = pageNumber;
+        }
         if(status == '\n'){
+            for(i = 0; i < currentSetIndex; i++){
+                currentPageForUpdate = currentSet[i];
+                updatedList[currentPageForUpdate] = 1;
+                if(rules[currentPageForUpdate][0]){ // rulex[x][0] is 1 if the page is in rules. if thre is a page that the curren page must precede
+                    for(int l = 1; l < NEXT_PAGES_MAP_LEN; l++){
+                        if(updatedList[l] && rules[currentPageForUpdate][l]){// if the added page must precede L and L already exists -> if 97, 13, (75) and 75 | 13
+                            printf("Illegal page: %d|%d has been violated.\n", currentPageForUpdate,l);
+                            for(j = 0; currentSet[j] != l; j++){
+                                ;
+                            }
+                            printf("Swapping current set i = %d, j = %d\t%d and \t%d\n", i,j, currentSet[i], currentSet[j]);
+                            temp = currentSet[j];
+                            currentSet[j] = currentSet[l];
+                            currentSet[l] = temp;
+                            i = 0;
+
+                            break;
+                        }
+                    }
+                    
+                }
+            }
+            
+        
             //printf("new line...\n");
             free(updatedList);
             updatedList = calloc(NEXT_PAGES_MAP_LEN, sizeof(int));
@@ -66,19 +97,6 @@ int main(){
             isLegalSet = 1;
         }
 
-        if(isLegalSet && (currentPageForUpdate = atoi(word))){ // ignoring the ','
-            currentSet[currentSetIndex++] = currentPageForUpdate;
-            updatedList[currentPageForUpdate] = 1;
-            if(rules[currentPageForUpdate][0]){ // rulex[x][0] is 1 if the page is in rules.
-                for(int l = 1; l < NEXT_PAGES_MAP_LEN; l++){
-                    if(updatedList[l] && rules[currentPageForUpdate][l]){// if the added page must precede L and L already exists
-                        printf("Illegal page: %d|%d has been violated.\n", currentPageForUpdate,l);
-                        isLegalSet = 0;
-                    }
-                }
-                
-            }
-        }
         
     }
     
