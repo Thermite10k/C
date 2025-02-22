@@ -71,7 +71,7 @@ int main(){
             updatedList[currentPageForUpdate] = 1;
             if(rules[currentPageForUpdate][0]){ // rulex[x][0] is 1 if the page is in rules.
                 for(int l = 1; l < NEXT_PAGES_MAP_LEN; l++){
-                    if(updatedList[l] && rules[currentPageForUpdate][l]){
+                    if(updatedList[l] && rules[currentPageForUpdate][l]){// if the added page must precede L and L already exists
                         printf("Illegal page: %d|%d has been violated.\n", currentPageForUpdate,l);
                         isLegalSet = 0;
                     }
