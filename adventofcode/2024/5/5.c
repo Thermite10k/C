@@ -10,8 +10,8 @@
 #define MAX_WORD 10
 #define MAX_LINE 100
 
-#define UPDATES_PATH "updates.txt"
-#define ORDERS_PATH "order.txt"
+#define UPDATES_PATH "updates2.txt"
+#define ORDERS_PATH "order2.txt"
 
 int get_f_word(FILE* fp, int limit, char *word);
 int get_f_line(FILE* fp, int limit, char *line);
@@ -35,7 +35,7 @@ int main(){
     char Y[MAX_WORD];
     char *patternPattern = "%[^|]|%[^ ]";
     while(get_f_line(fp, MAX_LINE, line) != 0){
-        printf("%s\n", line);
+        //printf("%s\n", line);
         if(sscanf(line,patternPattern, X, Y) == 2){
             rules[atoi(X)][atoi(Y)] = 1;
             rules[atoi(X)][0] = 1; // indicates that X is in the rules        
@@ -57,7 +57,9 @@ int main(){
     int j = 0;
     int pageNumber = 0;
     int temp = 0;
+    int wasIllegal = 0;
     while((status = get_f_word(fp, MAX_WORD, word)) != EOF){
+        wasIllegal = 0;
         if((pageNumber = atoi(word))){ // ignoring '.'
             currentSet[currentSetIndex++] = pageNumber;
         }
@@ -66,35 +68,40 @@ int main(){
                 currentPageForUpdate = currentSet[i];
                 updatedList[currentPageForUpdate] = 1;
                 if(rules[currentPageForUpdate][0]){ // rulex[x][0] is 1 if the page is in rules. if thre is a page that the curren page must precede
-                    for(int l = 1; l < NEXT_PAGES_MAP_LEN; l++){
-                        if(updatedList[l] && rules[currentPageForUpdate][l]){// if the added page must precede L and L already exists -> if 97, 13, (75) and 75 | 13
-                            printf("Illegal page: %d|%d has been violated.\n", currentPageForUpdate,l);
-                            for(j = 0; currentSet[j] != l; j++){
+                    for(int l = 0; l <= i; l++){// we will only check until the current selection, i
+                        if(updatedList[currentSet[l]] && rules[currentPageForUpdate][currentSet[l]]){// if the added page must precede L and L already exists -> if 97, 13, (75) and 75 | 13
+                            //printf("Illegal page: %d|%d has been violated.\n", currentPageForUpdate,currentSet[l]);
+                            for(j = 0; currentSet[j] != currentSet[l]; j++){
                                 ;
                             }
-                            printf("Swapping current set i = %d, j = %d\t%d and \t%d\n", i,j, currentSet[i], currentSet[j]);
+                            //printf("Swapping current set i = %d, j = %d\t%d and \t%d\n", i,j, currentSet[i], currentSet[j]);
                             temp = currentSet[j];
-                            currentSet[j] = currentSet[l];
-                            currentSet[l] = temp;
-                            i = 0;
-
+                            currentSet[j] = currentSet[i];
+                            currentSet[i] = temp;
+                            i=0;
+                            wasIllegal = 1;
                             break;
+                            
                         }
                     }
                     
                 }
             }
             
-        
+            
+            
             //printf("new line...\n");
             free(updatedList);
             updatedList = calloc(NEXT_PAGES_MAP_LEN, sizeof(int));
-            if(isLegalSet){
+            if(wasIllegal){ // not this statement will be the answer to part I. so !wasIllegal
+                // for(int k = 0; k < currentSetIndex ; k++){
+                //     //printf("%d ", currentSet[k]);
+                // }
                 sumAnswers += currentSet[currentSetIndex/2];
-                printf("%d\n", currentSet[currentSetIndex/2]);
+                //printf("will add: %d\n", currentSet[currentSetIndex/2]);
             }
             currentSetIndex = 0;
-            isLegalSet = 1;
+            
         }
 
         
