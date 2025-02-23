@@ -67,16 +67,13 @@ int main(){
             for(i = 0; i < currentSetIndex; i++){
                 currentPageForUpdate = currentSet[i];
                 updatedList[currentPageForUpdate] = 1;
-                if(rules[currentPageForUpdate][0]){ // rulex[x][0] is 1 if the page is in rules. if thre is a page that the curren page must precede
+                if(rules[currentPageForUpdate][0]){ // rulex[x][0] is 1 if the page is in rules. This means that there can a page in our list that the curren page must precede
                     for(int l = 0; l <= i; l++){// we will only check until the current selection, i
                         if(updatedList[currentSet[l]] && rules[currentPageForUpdate][currentSet[l]]){// if the added page must precede L and L already exists -> if 97, 13, (75) and 75 | 13
                             //printf("Illegal page: %d|%d has been violated.\n", currentPageForUpdate,currentSet[l]);
-                            for(j = 0; currentSet[j] != currentSet[l]; j++){
-                                ;
-                            }
-                            //printf("Swapping current set i = %d, j = %d\t%d and \t%d\n", i,j, currentSet[i], currentSet[j]);
-                            temp = currentSet[j];
-                            currentSet[j] = currentSet[i];
+                            //printf("Swapping current set i = %d, l = %d\t%d and \t%d\n", i,l, currentSet[i], currentSet[l]);
+                            temp = currentSet[l];
+                            currentSet[l] = currentSet[i];
                             currentSet[i] = temp;
                             i=0;
                             wasIllegal = 1;
