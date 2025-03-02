@@ -24,6 +24,7 @@ void rotateVector(struct vector *vector, int32_t angle);
 void showMap(uint32_t **floor, int32_t columns, int32_t rows);
 void swap(uint32_t **floor, int32_t x1, int32_t y1, int32_t x2, int32_t y2);
 void memcpyCharToInt(uint32_t *dest, char *src, int32_t length);
+int32_t turn_n_hit_old_obstacle( uint32_t **floor, int32_t coulmns, int32_t rows,  struct vector *guard,  struct vector *heading); // turn right, if you hit '#' and are not on '.', return 1 : 0
 int main(){
 
     char line[MAX_LINE];
@@ -132,20 +133,34 @@ int32_t look(uint32_t **floor, int32_t columns, int32_t rows, struct vector *gua
     }
 
     // the following x, y pair is one 'block' ahead of guard in the direction of heading, where it will "look"
-
+    static int32_t obstacleCount = 0; // we start at 300 to avoid ASCII characters.
     int32_t x = guard->x + heading->x;
     int32_t y = guard->y + heading->y;
+    int32_t blockAhead = 0;
+    while(x < columns && y < rows  && x >=0 && y >= 0){
+        guard->x = x - heading->x;
+        guard->y = y - heading->y;
+        floor[guard->y][guard->x] = '!'; // mark where you stand
+        blockAhead = floor[y][x];
 
-    while(x < columns && y < rows  && x >=0 && y >= 0 && floor[y][x] != '#'){
+        if(blockAhead != '#'){ // if you can take a step
+            if(turn_n_hit_old_obstacle(floor, columns, rows, guard, heading)){
+                obstacleCount++;
+            };
+            if(blockAhead == '.'){ // if you've never been there, add to unique steps
+                *steps = *steps + 1;
+            }
+            
         
-        if(floor[y][x] != '1'){
-             *steps = *steps+1;
-         }
-        floor[y - heading->y][x - heading->x] = '1';
-
+        }
+        if(blockAhead == '#'){ // if the obstacle is ahead
+            break;
+        }
         x += heading->x;
         y += heading->y;
     }
+
+    printf("Possible obstacles: %d\n", obstacleCount);
     // we subtract the heading because guard+heading is the block ahead, not the guard itself.
     guard->x = x - heading->x;
     guard->y = y - heading->y;
@@ -175,7 +190,7 @@ void rotateVector(struct vector *vector, int32_t angle){
 void showMap(uint32_t **floor, int32_t columns, int32_t rows){
     for(int32_t y = 0; y < rows; y++){
         for(int32_t x = 0; x < columns; x++){
-            putchar(floor[y][x]%CHAR_MAX); // we're working with integers and putchar expects a char.
+            putchar(floor[y][x]%CHAR_MAX); // we're working with integers and putchar expects a char. This does not fully represent the floor as characters loop every CHAR_MAX while they are actually unique
         }
         putchar('\n');
     }
@@ -191,4 +206,29 @@ void memcpyCharToInt(uint32_t *dest, char *src, int32_t length){
     for(uint32_t i = 0; i < length; i++){    
         dest[i] = (uint32_t)src[i];
     }
+}
+int32_t turn_n_hit_old_obstacle( uint32_t **floor,int32_t columns, int32_t rows,   struct vector *guard,  struct vector *heading){
+    struct vector guardCpy = {.x = guard->x, .y = guard->y};
+    struct vector headingCpy = {.x = heading->x, .y = heading->y};
+
+    rotateVector(&headingCpy, -90);
+
+    uint32_t x = guardCpy.x + headingCpy.x;
+    uint32_t y = guardCpy.y + headingCpy.y;
+    if(floor[y][x] == '#'){
+        return 0;
+    }
+    while (x >= 0 && y >= 0 && x < columns && y < rows){    
+        if(floor[y][x] == '#' && floor[y - headingCpy.y][x - headingCpy.x] != '.'){
+            //printf("Guard is at x: %d, y: %d, looking at x: %d, y: %d\n",guardCpy.x, guardCpy.y, headingCpy.y, headingCpy.x );
+            //printf("Put obstacle at x: %d, y: %d\n", guard->x + heading->x, guard->y + heading->y);
+            return 1;
+        }
+        x += headingCpy.x;
+        y += headingCpy.y;
+    
+    }
+
+    return 0;
+
 }
