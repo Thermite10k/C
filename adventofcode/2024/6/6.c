@@ -210,7 +210,7 @@ void memcpyCharToInt(uint32_t *dest, char *src, int32_t length){
 int32_t turn_n_hit_old_obstacle( uint32_t **floor,int32_t columns, int32_t rows,   struct vector *guard,  struct vector *heading){
     struct vector guardCpy = {.x = guard->x, .y = guard->y};
     struct vector headingCpy = {.x = heading->x, .y = heading->y};
-
+    uint32_t oldFloorValue = 0;
     rotateVector(&headingCpy, -90);
 
     uint32_t x = guardCpy.x + headingCpy.x;
@@ -219,10 +219,22 @@ int32_t turn_n_hit_old_obstacle( uint32_t **floor,int32_t columns, int32_t rows,
         return 0;
     }
     while (x >= 0 && y >= 0 && x < columns && y < rows){    
-        if(floor[y][x] == '#' && floor[y - headingCpy.y][x - headingCpy.x] != '.'){
+        if(floor[y][x] == '#' && floor[y - headingCpy.y][x - headingCpy.x] == '!'){
+            guardCpy.x = x - headingCpy.x;
+            guardCpy.y = y - headingCpy.y;
+
+            rotateVector(&headingCpy, -90);
+            if(floor[guardCpy.y + headingCpy.y][guardCpy.x + headingCpy.x] == '!'){
+                if(((oldFloorValue = floor[guard->y + heading ->y][guard->x + heading ->x] )<= CHAR_MAX )){
+                    floor[guard->y + heading ->y][guard->x + heading->x] += CHAR_MAX;
+                    printf("Put obstacle at x: %d, y: %d\n", guard->x + heading->x, guard->y + heading->y);
+                    return 1;
+                }else{
+                    return 0;
+                }
+                
+            }
             //printf("Guard is at x: %d, y: %d, looking at x: %d, y: %d\n",guardCpy.x, guardCpy.y, headingCpy.y, headingCpy.x );
-            //printf("Put obstacle at x: %d, y: %d\n", guard->x + heading->x, guard->y + heading->y);
-            return 1;
         }
         x += headingCpy.x;
         y += headingCpy.y;
