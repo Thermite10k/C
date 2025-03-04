@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <limits.h>
 
 #define MAX_LINE 150
 #define MAX_LINE_BUFFER 150
 #define CHAR_BUFF_SIZE 20
-#define KEY "key.txt"
+#define KEY "key2.txt"
 
 struct vector{ // can be used for any (x, y) pair.
     int32_t x;
@@ -24,9 +25,16 @@ void rotateVector(struct vector *vector, int32_t angle);
 void showMap(uint32_t **floor, int32_t columns, int32_t rows);
 void swap(uint32_t **floor, int32_t x1, int32_t y1, int32_t x2, int32_t y2);
 void memcpyCharToInt(uint32_t *dest, char *src, int32_t length);
-int32_t turn_n_hit_old_obstacle( uint32_t **floor, int32_t coulmns, int32_t rows,  struct vector *guard,  struct vector *heading); // turn right, if you hit '#' and are not on '.', return 1 : 0
-int main(){
+int32_t turn_n_hit_old_obstacle(uint32_t **floor, int32_t coulmns, int32_t rows,  struct vector *guard,  struct vector *heading); // turn right, if you hit '#' and are not on '.', return 1 : 0
 
+uint32_t floorCpy[200][200];
+
+int main(){
+    for(uint32_t i = 0; i < 200; i++)    {
+        for(uint32_t j = 0; j < 200; j++){
+            floorCpy[i][j] = 0;
+        }
+    }
     char line[MAX_LINE];
     FILE *fp = fopen(KEY, "r");
     uint32_t **lines = calloc(MAX_LINE_BUFFER, sizeof(uint32_t *));
@@ -49,6 +57,14 @@ int main(){
     
     
     warp_to_obstacle(lines, numberOfColumns, linesCount);
+    uint32_t ans = 0;
+    for(uint32_t i = 0; i < 200; i++)    {
+        for(uint32_t j = 0; j < 200; j++){
+            floorCpy[i][j] && ans++;
+        }
+    }
+
+    printf("obstacles: %d\n", ans);
 
     return 0;
 }
@@ -107,7 +123,7 @@ void warp_to_obstacle(uint32_t **floor, int32_t columns, int32_t rows){
         // printf("guard exits at x: %d y: %d  with heading x: %d y: %d and has walked %d steps\n", guard->x, guard->y, heading.x, heading.y, steps);
     }
     steps = steps+1; // the algorithm does not take the last step.
-    showMap(floor, columns, rows);
+    //showMap(floor, columns, rows);
     printf("guard exits at x: %d y: %d  with heading x: %d y: %d and has walked %d steps\n", guard->x, guard->y, heading.x, heading.y, steps);
        
     
@@ -127,6 +143,7 @@ struct vector *find_guard(uint32_t **floor, int32_t columns, int32_t rows){
     return guard;
 }
 
+
 int32_t look(uint32_t **floor, int32_t columns, int32_t rows, struct vector *guard, struct vector *heading, int32_t *steps){
     if(heading->x == 0 && heading->y == 0){
         printf("where exactly is the guard looking at?\n");
@@ -144,7 +161,8 @@ int32_t look(uint32_t **floor, int32_t columns, int32_t rows, struct vector *gua
         blockAhead = floor[y][x];
 
         if(blockAhead != '#'){ // if you can take a step
-            if(turn_n_hit_old_obstacle(floor, columns, rows, guard, heading)){
+            if(blockAhead != '!' && !floorCpy[y][x] && turn_n_hit_old_obstacle(floor, columns, rows, guard, heading)){
+                floorCpy[y][x] = 1;
                 obstacleCount++;
             };
             if(blockAhead == '.'){ // if you've never been there, add to unique steps
@@ -159,8 +177,9 @@ int32_t look(uint32_t **floor, int32_t columns, int32_t rows, struct vector *gua
         x += heading->x;
         y += heading->y;
     }
+    //floor[guard->y][guard->x] = 'f'; // mark where you stand
 
-    printf("Possible obstacles: %d\n", obstacleCount);
+    //printf("Possible obstacles: %d\n", obstacleCount);
     // we subtract the heading because guard+heading is the block ahead, not the guard itself.
     guard->x = x - heading->x;
     guard->y = y - heading->y;
@@ -207,40 +226,71 @@ void memcpyCharToInt(uint32_t *dest, char *src, int32_t length){
         dest[i] = (uint32_t)src[i];
     }
 }
+
+
 int32_t turn_n_hit_old_obstacle( uint32_t **floor,int32_t columns, int32_t rows,   struct vector *guard,  struct vector *heading){
+
+
     struct vector guardCpy = {.x = guard->x, .y = guard->y};
     struct vector headingCpy = {.x = heading->x, .y = heading->y};
-    uint32_t oldFloorValue = 0;
-    rotateVector(&headingCpy, -90);
 
     uint32_t x = guardCpy.x + headingCpy.x;
     uint32_t y = guardCpy.y + headingCpy.y;
-    if(floor[y][x] == '#'){
-        return 0;
-    }
-    while (x >= 0 && y >= 0 && x < columns && y < rows){    
-        if(floor[y][x] == '#' && floor[y - headingCpy.y][x - headingCpy.x] == '!'){
-            guardCpy.x = x - headingCpy.x;
-            guardCpy.y = y - headingCpy.y;
-
-            rotateVector(&headingCpy, -90);
-            if(floor[guardCpy.y + headingCpy.y][guardCpy.x + headingCpy.x] == '!'){
-                if(((oldFloorValue = floor[guard->y + heading ->y][guard->x + heading ->x] )<= CHAR_MAX )){
-                    floor[guard->y + heading ->y][guard->x + heading->x] += CHAR_MAX;
-                    printf("Put obstacle at x: %d, y: %d\n", guard->x + heading->x, guard->y + heading->y);
-                    return 1;
-                }else{
-                    return 0;
-                }
-                
-            }
-            //printf("Guard is at x: %d, y: %d, looking at x: %d, y: %d\n",guardCpy.x, guardCpy.y, headingCpy.y, headingCpy.x );
-        }
-        x += headingCpy.x;
-        y += headingCpy.y;
     
+    uint32_t *obstacle = &floor[y][x];
+    uint32_t obstacleCpy = *obstacle;
+    *obstacle = '#';
+        
+    rotateVector(&headingCpy, -90);
+
+    x = guard->x + headingCpy.x;
+    y = guard->y + headingCpy.y;
+
+    uint32_t maxSteps = columns * rows;
+    uint32_t steps = 0;
+    
+//    printf("looking for loop at x:%d, y:%d\n", guard->x, guard->y);
+    while (steps < maxSteps && x >= 0 && y >= 0 && x < columns && y < rows){    
+        guardCpy.x = x - headingCpy.x;
+        guardCpy.y = y - headingCpy.y;
+        if(steps > 1 && guard->x == guardCpy.x && guard->y == guardCpy.y && heading->y == headingCpy.y && heading->x == headingCpy.x){
+            *obstacle = obstacleCpy;
+            //printf("Guard is at x: %0.2d y: %0.2d, looking at x: %0.2d y: %0.2d which is a %c\n", guardCpy.x, guardCpy.y, x, y, floor[y][x]);
+            //printf("fast exit\n");
+            return 1;
+        }
+        if(floor[y][x] == '#'){
+            rotateVector(&headingCpy, -90);
+            x = guardCpy.x + headingCpy.x;
+            y = guardCpy.y + headingCpy.y;
+        }else{
+            // if(guard->x == guardCpy.x && guard->y == guardCpy.y && heading->y == headingCpy.y && heading->x == headingCpy.x){
+            //     *obstacle = obstacleCpy;
+            //     return 1;
+            // }
+            y += headingCpy.y;
+            x += headingCpy.x;
+        }
+        
+        steps++;
+        
+    }
+    if(steps == maxSteps){
+        *obstacle = obstacleCpy;
+       // printf("steps exit\n");
+        return 1;
     }
 
+    *obstacle = obstacleCpy;
     return 0;
 
 }
+
+/*
+
+    It's 03/03/25 @ 4:12 AM, too late to think clearly and implement my solution, what you should do is 
+    on each step, turn right, if you hit a valid obstable, keep turning and moving until you reach whe-
+    -re you started from and return 1. I don't know what the base condition should be but it's either 
+    a loop, and we return 1, or we get out of bounds and return 0
+
+*/
