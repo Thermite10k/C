@@ -11,6 +11,7 @@ char get_f_c(FILE *fp);
 void unget_f_c(char C);
 int64_t get_f_number(FILE *fp, int32_t limit, int64_t *number);
 int32_t can_be_solved(int64_t acc, int32_t index, int64_t answer, int64_t *numbers);
+int64_t intint(int64_t a, int64_t b);
 int main(){
 
     int64_t numbersArray[MAX_NUMBERS];
@@ -42,6 +43,7 @@ int main(){
     }
 
     printf("%lld\n", answer);
+ 
     return 0;
 
 }
@@ -102,5 +104,25 @@ int32_t can_be_solved(int64_t acc, int32_t index, int64_t answer, int64_t *numbe
     if(can_be_solved(acc + numbers[index-1], index, answer, numbers)){
         return 1;
     }
+    if(can_be_solved(intint(acc, numbers[index-1]), index, answer, numbers)){
+        return 1;
+    }
     return can_be_solved(acc * numbers[index-1], index, answer, numbers);
+}
+int64_t intint(int64_t a, int64_t b){
+    
+
+    int32_t paddingForA = 1;
+
+    while(b >= paddingForA){
+
+        b = b/10;
+        paddingForA *= 10;
+        
+    }
+    a = a * paddingForA;
+    a = a + b;
+
+    return a;
+    
 }
