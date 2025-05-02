@@ -29,10 +29,10 @@ int main(){
             numbersArray[numbersArrayIndex++] = temp;
             if(status == '\n'){
             numbersArray[numbersArrayIndex] = -1; // this will marl the end of the current set.
-            for(uint32_t i = 0; i < numbersArrayIndex; i++){
-               // printf("%lld ", numbersArray[i]);
-            }
-            if(can_be_solved(0, 1, numbersArray[0], numbersArray)){
+            // for(uint32_t i = 0; i < numbersArrayIndex; i++){
+            //    // printf("%lld ", numbersArray[i]);
+            // }
+            if(can_be_solved(0, 1, numbersArray[0], numbersArray)){ // start the index at 1 since num[i] is the ans, redundant? Yes. should I fix it? Yes, will I?
                 //printf("\t\t%lld can be achieved.", numbersArray[0]);
                 answer += (uint64_t)numbersArray[0];
             }
