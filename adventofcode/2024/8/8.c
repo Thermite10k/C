@@ -24,7 +24,8 @@ int32_t vectorInVector(vector *v1, vector *v2); // returns 1 if v1 is in v2.
 
 char uniquenessMap[MAX_LINE][MAX_LINE];
 int main(int argc, char* argv[]){
-
+    
+    memset(uniquenessMap, '.', sizeof(uniquenessMap));
     FILE* fp = fopen(KEY, "r");
 
     int32_t rows = 0;
@@ -60,10 +61,9 @@ int32_t find_unique_pairs(char map[MAX_LINE][MAX_LINE], vector mapDims, vector s
         for(pt1.x = startAt.x; pt1.x < mapDims.x; pt1.x++){
             if(map[pt1.y][pt1.x] != '.'){
                 currentNode = map[pt1.y][pt1.x];
-                pt2.x = pt1.x + 1 < mapDims.x ? pt1.x + 1 : 0;
-                pt2.y = pt2.x ? pt1.y : pt1.y + 1; // if pt2.x is set to 0, you'll go to next line, y++
-                for(pt2; pt2.y < mapDims.y; pt2.y++, pt2.x = 0){ // reset the pt2.x here becasue reserring it in the loop initates it to 0, which we usually don't want until a new line, which happens here
-                    for(pt2; pt2.x < mapDims.x; pt2.x++){
+
+                for(pt2.y = pt1.y; pt2.y < mapDims.y; pt2.y++, pt2.x){
+                    for(pt2.x = (pt1.y == pt2.y ? pt1.x+1 : 0); pt2.x < mapDims.x; pt2.x++){
                         if(currentNode == map[pt2.y][pt2.x]){
                             totalAntinodes += count_antinodes(pt1, pt2, mapDims);
                         }
