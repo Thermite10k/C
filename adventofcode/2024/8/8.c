@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
+#include <string.h>
 
 #define MAX_LINE 150
-#define KEY "key.txt"
+#define KEY "key2.txt"
 
 typedef struct {
     int32_t x;
@@ -17,9 +18,11 @@ vector getL1Distance(vector *v1, vector *v2);
 int32_t vectorInVector(vector *v1, vector *v2); // returns 1 if v1 is in v2.
 /*
     TODO:
-        1- make the dims vector automatic i.e., the x, y should be the lenght and number of lines
-        2- the count antinote only works if pt2.x > pt1.x. otherwise it will return garbage, find a geometric solution
+        1- make the dims vector automatic i.e., the x, y should be the lenght and number of lines -- DONE
+        2- the count antinote only works if pt2.x > pt1.x. otherwise it will return garbage, find a geometric solution -- DONE
 */
+
+char uniquenessMap[MAX_LINE][MAX_LINE];
 int main(int argc, char* argv[]){
 
     FILE* fp = fopen(KEY, "r");
@@ -35,7 +38,8 @@ int main(int argc, char* argv[]){
         printf("%s", (map+lineCounter));
         lineCounter++;
     }
-    vector dims = {.x = 12, .y = 12};
+    
+    vector dims = {.x = (strlen(map[0]) - 1), .y = lineCounter};
     vector start = {.x = 0, .y = 0};
     printf("%d\n", find_unique_pairs(map, dims, start));
     
@@ -78,18 +82,37 @@ int32_t count_antinodes(vector v1, vector v2, vector mapDims){
     int32_t antiodeCount = 0;
 
 
-    vector a1  = {.x = v1.x - distance.x, .y = v1.y - distance.y};
-    vector a2 =  {.x = v2.x + distance.x, .y = v2.y + distance.y};
+    /*
+
+        I need a way to determie whether v2 (antenna 2) is to the left or right of a1, it's always to the bottom 
+        so I only need to deal with the 'x' alignment.
+            
+            v1            |         v1
+                          |
+        v2          1     |               v2    -1
+    
+    */
+
+    int32_t direction = v1.x < v2.x ? -1 : 1; // dir is 1 if v2 to the left, else -1.
+
+    vector a1  = {.x = v1.x + direction * distance.x, .y = v1.y - distance.y};
+    vector a2 =  {.x = v2.x +  -direction * distance.x, .y = v2.y + distance.y};
 
     if(vectorInVector(&a1, &mapDims)){
-        printf("One at y: %d x:%d\n", a1.y, a1.x);
-        antiodeCount++;
+        printf("a1 at y: %d x:%d\n", a1.y, a1.x);
+        if(uniquenessMap[a1.y][a1.x] != '1'){
+            uniquenessMap[a1.y][a1.x] = '1';
+            antiodeCount++;
+        }
     }
 
 
     if(vectorInVector(&a2, &mapDims)){
-        printf("One at y: %d x:%d\n", a2.y, a2.x);
-        antiodeCount++;
+        printf("a2 at y: %d x:%d\n", a2.y, a2.x);
+        if(uniquenessMap[a2.y][a2.x] != '1'){
+            uniquenessMap[a2.y][a2.x] = '1';
+            antiodeCount++;
+        }
     }
 
     printf("Returnign %d\n", antiodeCount);
