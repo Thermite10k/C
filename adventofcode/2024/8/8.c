@@ -84,8 +84,8 @@ int32_t count_antinodes(vector v1, vector v2, vector mapDims){
 
     /*
 
-        I need a way to determie whether v2 (antenna 2) is to the left or right of a1, it's always to the bottom 
-        so I only need to deal with the 'x' alignment.
+        I need a way to determie whether v2 (antenna 2) is to the left or right of a1, it's always on the bottom 
+        or the same line, so I only need to deal with the 'x' alignment.
             
             v1            |         v1
                           |
@@ -97,22 +97,42 @@ int32_t count_antinodes(vector v1, vector v2, vector mapDims){
 
     vector a1  = {.x = v1.x + direction * distance.x, .y = v1.y - distance.y};
     vector a2 =  {.x = v2.x +  -direction * distance.x, .y = v2.y + distance.y};
+    /*
+        The following if statements register the nodes as antinodes if they are not
+        -already on the same spot as an other antinode.
+    */
+    if(uniquenessMap[v1.y][v1.x] != '1'){
+            uniquenessMap[v1.y][v1.x] = '1';
+            antiodeCount++;
+        }
+    if(uniquenessMap[v2.y][v2.x] != '1'){
+            uniquenessMap[v2.y][v2.x] = '1';
+            antiodeCount++;
+        }
 
-    if(vectorInVector(&a1, &mapDims)){
+        /*
+            The folloing while loops check for harmonics along the path
+        */
+
+    while(vectorInVector(&a1, &mapDims)){
         printf("a1 at y: %d x:%d\n", a1.y, a1.x);
         if(uniquenessMap[a1.y][a1.x] != '1'){
             uniquenessMap[a1.y][a1.x] = '1';
             antiodeCount++;
         }
+        a1.x = a1.x + direction * distance.x;
+        a1.y = a1.y - distance.y;
     }
 
 
-    if(vectorInVector(&a2, &mapDims)){
+    while(vectorInVector(&a2, &mapDims)){
         printf("a2 at y: %d x:%d\n", a2.y, a2.x);
         if(uniquenessMap[a2.y][a2.x] != '1'){
             uniquenessMap[a2.y][a2.x] = '1';
             antiodeCount++;
         }
+        a2.x = a2.x + -direction * distance.x;
+        a2.y = a2.y + distance.y; 
     }
 
     printf("Returnign %d\n", antiodeCount);
